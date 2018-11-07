@@ -30,7 +30,7 @@ class Config(object):
     # Redis默认选择数据库
     REDIS_DATA_DB = 0
     # Redis 1号数据库 -- session存放数据库
-    REDIS_SESSION_DB = 1
+    REDIS_SESSION_DB = 14
 
     # 设置密钥通过 base64.b64encode(os.urandom(48)) 来生成一个指定长度的随机字符串
     # SECRET_KEY = "tOoJdhcvgkaC+tirWXkw9yzdSyDhnG9gc4DbouU9xgdgs8fbIdWYHsc9dwVAIxri"
