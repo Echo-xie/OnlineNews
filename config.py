@@ -6,13 +6,10 @@ import base64
 import os
 from redis import StrictRedis
 
-
 class Config(object):
     """
         配置信息
     """
-    # 调试模式
-    DEBUG = True
 
     # mysql数据库连接配置
     # SQLALCHEMY_DATABASE_URI = '数据库类型://账号:密码@数据库IP:数据库端口/数据库名称'
@@ -45,3 +42,24 @@ class Config(object):
     SESSION_REDIS = StrictRedis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_SESSION_DB)
     # session有效时间 86400秒 -- 24小时
     PERMANENT_SESSION_LIFETIME = 86400
+
+
+class DevelopementConfig(Config):
+    """
+        开发模式下的配置 -- 用于开发环境的配置信息, 继承配置类
+    """
+    # 调试模式
+    DEBUG = True
+
+
+class ProductionConfig(Config):
+    """
+        生产模式下的配置 -- 用于项目上线后运行的配置信息, 继承配置类
+    """
+    pass
+
+# 定义配置字典 -- 方便使用不同环境的配置信息
+config = {
+    "development": DevelopementConfig,
+    "production": ProductionConfig
+}
