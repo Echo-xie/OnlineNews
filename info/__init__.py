@@ -23,7 +23,7 @@ def create_app(config_name):
     :param config_name: 配置文件名称
     :return: app -- Flask实例化
     """
-    global mysql_db, redis_db
+    global redis_db
     # 根据配置文件名称加载配置文件
     config_cls = config[config_name]
     """app实例化配置"""
