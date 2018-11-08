@@ -2,6 +2,8 @@
     项目基本配置与测试 -- 只用作最基本的运行工作
 date: 18-11-7 下午7:54
 """
+import logging
+
 from info import create_app, mysql_db
 from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
@@ -23,10 +25,11 @@ def index():
         路由函数
     :return:
     """
-    return "hello news!"
+    logging.debug("调试日志")
+    return "hello news"
 
 
 # 运行项目
 if __name__ == '__main__':
-    # app.run()
-    manager.run()
+    app.run()
+    # manager.run()
