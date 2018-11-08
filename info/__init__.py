@@ -35,6 +35,10 @@ def create_app(config_name):
     app = Flask(__name__)
     # 设置配置文件
     app.config.from_object(config_cls)
+    """注册蓝图"""
+    # 首页蓝图
+    from info.modules import index_blu
+    app.register_blueprint(index_blu)
     """数据库配置"""
     # 配置数据库 -- 根据app加载的配置信息
     mysql_db.init_app(app)

@@ -17,18 +17,6 @@ Migrate(app, mysql_db)
 # 给终端脚本工具新增数据迁移的相关命令
 manager.add_command("db", MigrateCommand)
 
-
-# 定义路由函数
-@app.route("/")
-def index():
-    """
-        路由函数
-    :return:
-    """
-    logging.debug("调试日志")
-    return "hello news"
-
-
 # 运行项目
 if __name__ == '__main__':
     app.run()
