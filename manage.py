@@ -13,7 +13,7 @@ manager = Manager(app)
 # 初始化数据库迁移模块
 Migrate(app, mysql_db)
 # 给终端脚本工具新增数据迁移的相关命令
-manager.add_command('db', MigrateCommand)
+manager.add_command("db", MigrateCommand)
 
 
 # 定义路由函数
