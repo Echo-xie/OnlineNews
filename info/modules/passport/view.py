@@ -3,9 +3,13 @@
 date: 18-11-9 上午9:18
 """
 import logging
+import random
+import re
 
 from flask import request, jsonify, make_response
 
+from info.lib.yuntongxun.sms import CCP
+from info.models import User
 from . import passport_blu
 # 生成验证码库
 from info.utils.captcha.captcha import captcha
@@ -50,12 +54,94 @@ def image_code():
 def send_sms():
     """
         发送短信
+    传入参数: json格式
+    mobile: 手机号码
+    image_code: 用户输入的验证码
+    image_code_id: 图片验证码编号
+
     流程:
-    1. 接收参数并判断是否有数据
+    1. 接收参数并判断参数数据是否正确
     2. 验证手机号码是否正确
-    3. 根据输入的图片编码获取对应的真实验证码内容
-    4. 对验证码进行对比验证是否输入正确
-    5. 生成并发送短信
-    6.
-    :return:
+    3. 根据传入的图片编码获取对应的真实验证码内容
+    4. 对用户输入的验证码进行对比验证是否输入正确
+    5. 生成并发送短信, 短信内容保存数据库
+    6. 返回响应
+    :return: 成功发送短信响应
     """
+    # 获取请求体
+    parma_dict = request.json
+    # 手机号码
+    mobile = parma_dict.get("mobile")
+    # 用户输入的验证码
+    image_code = parma_dict.get("image_code")
+    # 图片验证码编号
+    image_code_id = parma_dict.get("image_code_id")
+
+    """1. 接收参数并判断参数数据是否正确"""
+    # 如果不是全参数都有数据
+    if not all([mobile, image_code, image_code_id]):
+        # 参数不齐
+        return jsonify(errno=RET.PARAMERR, errmsg="参数不齐")
+    """2. 验证手机号码是否正确"""
+    # 如果手机号码不符合匹配规则
+    if not re.match("^1[3578][\d]{9}", mobile):
+        # 手机号码不正确
+        return jsonify(errno=RET.DATAERR, errmsg="手机号码不正确")
+    # 校验该手机是否已经注册
+    try:
+        # 查询用户表是否存在此手机号码
+        user = User.query.filter_by(mobile=mobile).first()
+    except Exception as e:
+        logging.error(e)
+        # 数据库查询错误
+        return jsonify(errno=RET.DBERR, errmsg="数据库查询错误")
+    if user:
+        # 该手机已被注册
+        return jsonify(errno=RET.DATAEXIST, errmsg="该手机已被注册")
+    """3. 根据传入的图片编码获取对应的真实验证码内容"""
+    # 根据图片验证码编号获取数据库中真实的验证码内容
+    try:
+        from info import redis_db
+        # 数据库获取数据
+        real_iamge_code = redis_db.get("ImageCode_" + image_code_id)
+        # 如果数据获取成功
+        if real_iamge_code:
+            # 转码
+            real_iamge_code = real_iamge_code.decode()
+            # 删除数据库数据
+            redis_db.delete("ImageCode_" + image_code_id)
+    except Exception as e:
+        logging.error(e)
+        # 数据库获取数据失败
+        return jsonify(errno=RET.DBERR, errmsg="获取图片验证码失败")
+    # 判断验证码是否过期
+    if not real_iamge_code:
+        # 验证码已过期
+        return jsonify(errno=RET.NODATA, errmsg="验证码已过期")
+    """4. 对用户输入的验证码进行对比验证是否输入正确"""
+    # 对用户输入的验证码进行比对验证
+    if image_code.lower() != real_iamge_code.lower():
+        # 验证码输入错误
+        return jsonify(errno=RET.DATAERR, errmsg="验证码输入错误")
+    """5. 生成并发送短信, 短信内容保存数据库"""
+    # 生成随机数
+    rand_code = random.randint(0, 999999)
+    # 获取短信验证码
+    sms_code = "%6d" % rand_code
+    # 写日志
+    logging.debug("短信验证码为: %s" % sms_code)
+    # 发送短信 ( 手机号码, [短信内容, 失效时间-分钟], 模板 )
+    result = CCP().send_template_sms(mobile, [sms_code, constants.SMS_CODE_REDIS_EXPIRES / 60], "1")
+    # 判断短信是否发送成功
+    if result != 0:
+        # 短信发送失败
+        return jsonify(errno=RET.THIRDERR, errmsg="发送短信失败")
+    try:
+        # 保存短信验证码
+        redis_db.set("SMS_" + mobile, sms_code, constants.SMS_CODE_REDIS_EXPIRES)
+    except Exception as e:
+        logging.error(e)
+        # 保存短信验证码失败
+        return jsonify(errno=RET.DBERR, errmsg="保存短信验证码失败")
+    """6. 返回响应"""
+    return jsonify(errno=RET.OK, errmsg="短信验证码发送成功")

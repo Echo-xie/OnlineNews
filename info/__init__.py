@@ -84,5 +84,7 @@ class constants(object):
     """
         常量数据
     """
-    # 图片超时时间 3 分钟
+    # 图片验证码超时时间 3 分钟
     IMAGE_CODE_REDIS_EXPIRES = 3 * 60
+    # 短信验证码超时时间 3 分钟
+    SMS_CODE_REDIS_EXPIRES = 3 * 60
