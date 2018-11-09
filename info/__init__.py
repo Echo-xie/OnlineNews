@@ -37,8 +37,11 @@ def create_app(config_name):
     app.config.from_object(config_cls)
     """注册蓝图"""
     # 首页蓝图
-    from info.modules import index_blu
+    from info.modules.index import index_blu
     app.register_blueprint(index_blu)
+    # 验证/通行证蓝图
+    from info.modules.passport import passport_blu
+    app.register_blueprint(passport_blu)
     """数据库配置"""
     # 配置数据库 -- 根据app加载的配置信息
     mysql_db.init_app(app)
@@ -48,7 +51,8 @@ def create_app(config_name):
     redis_pool["pool_0"] = pool_0
     # 通过连接池实例化Redis数据库 -- 当需要调用某个具体的数据库才去调用相应的连接池, 减少新建和释放的资源
     global redis_db
-    redis_db = redis.Redis(connection_pool=redis_pool["pool_0"])
+    # redis_db = redis.Redis(connection_pool=redis_pool["pool_0"])
+    redis_db = redis.StrictRedis(connection_pool=redis_pool["pool_0"])
     """app的额外配置"""
     # 开启csrf的防范机制
     CSRFProtect(app)
@@ -74,3 +78,11 @@ def setup_log(config_name):
     file_log_handler.setFormatter(formatter)
     # 为全局日志工具对象设置日志处理器
     logging.getLogger().addHandler(file_log_handler)
+
+
+class constants(object):
+    """
+        常量数据
+    """
+    # 图片超时时间 3 分钟
+    IMAGE_CODE_REDIS_EXPIRES = 3 * 60

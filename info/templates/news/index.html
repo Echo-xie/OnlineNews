@@ -5,11 +5,13 @@
     <title>首页-新经资讯</title>
     <link rel="stylesheet" type="text/css" href="../../static/news/css/reset.css">
     <link rel="stylesheet" type="text/css" href="../../static/news/css/main.css">
+    <script type="text/javascript" src="../../static/news/js/vue.min.js"></script>
     <script type="text/javascript" src="../../static/news/js/jquery-1.12.4.min.js"></script>
     <script type="text/javascript" src="../../static/news/js/main.js"></script>
     <script type="text/javascript" src="../../static/news/js/index.js"></script>
 </head>
 <body>
+<div id="app">
     <div class="header_con">
         <div class="header">
             <a href="#" class="logo fl"><img src="../../static/news/images/logo.png" alt="logo"></a>
@@ -32,7 +34,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="conter_con">
         <ul class="list_con fl">
             <li>
@@ -96,7 +98,7 @@
             </ul>
         </div>
     </div>
-    <div class="footer">        
+    <div class="footer">
         <div class="footer_links">
             <a href="">关于我们</a>
             <span>|</span>
@@ -107,11 +109,11 @@
             <a href="">友情链接</a>
         </div>
         <p class="copyright">
-            CopyRight © 2018 新经资讯信息技术有限公司 All Rights Reserved<br />
-电话：010-****888    京ICP备*******8号
+            CopyRight © 2018 新经资讯信息技术有限公司 All Rights Reserved<br/>
+            电话：010-****888 京ICP备*******8号
         </p>
     </div>
-    
+
     <!-- 登录表单 -->
     <form class="login_form_con">
         <div class="login_form">
@@ -150,7 +152,7 @@
             <div class="form_group">
                 <input type="text" name="code_pwd" id="imagecode" class="code_pwd">
                 <div class="input_tip">图形验证码</div>
-                <img src="../../static/news/images/pic_code.png" class="get_pic_code" onclick="generateImageCode()">
+                <img :src=image_src class="get_pic_code" onclick="generateImageCode()">
                 <div id="register-image-code-err" class="error_tip">图形码不能为空</div>
             </div>
             <div class="form_group">
@@ -164,7 +166,7 @@
                 <div class="input_tip">密码(不少于6位)</div>
                 <div id="register-password-err" class="error_tip">密码不能为空</div>
             </div>
-            <div  class="form_group2 clearfix">
+            <div class="form_group2 clearfix">
                 <input type="checkbox" class="agree_input" checked>
                 <p>同意使用条款，并已阅读"跟帖评论自律管理承诺书"</p>
                 <div class="error_tip">请勾选</div>
@@ -174,5 +176,6 @@
         </div>
         <div class="mask"></div>
     </form>
+</div>
 </body>
 </html>
