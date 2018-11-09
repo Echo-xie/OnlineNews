@@ -69,8 +69,8 @@ def send_sms():
     :return: 成功发送短信响应
     """
     # 获取请求体
-    # parma_dict = request.json
-    parma_dict = dict(eval(request.data))
+    parma_dict = request.json
+    # parma_dict = dict(eval(request.data))
     # 手机号码
     mobile = parma_dict.get("mobile")
     # 用户输入的验证码
@@ -110,7 +110,7 @@ def send_sms():
             # 转码
             real_iamge_code = real_iamge_code.decode()
             # 删除数据库数据
-            redis_db.delete("ImageCode_" + image_code_id)
+            # redis_db.delete("ImageCode_" + image_code_id)
     except Exception as e:
         logging.error(e)
         # 数据库获取数据失败
@@ -146,3 +146,38 @@ def send_sms():
         return jsonify(errno=RET.DBERR, errmsg="保存短信验证码失败")
     """6. 返回响应"""
     return jsonify(errno=RET.OK, errmsg="短信验证码发送成功")
+
+
+# 定义路由函数
+@passport_blu.route("/register", methods=["POST"])
+def register():
+    """
+        新用户注册功能
+    传入参数: json格式
+    mobile: 手机号码
+    image_code: 用户输入的验证码
+    image_code_id: 图形验证码编号
+    smscode: 短信验证码
+    password: 密码
+
+    流程:
+    1. 接收参数并判断参数数据是否正确
+    2. 验证手机号码是否正确根据手机号码获取对应真实的短信验证码
+    3. 对用户输入的短信验证码进行对比验证是否输入正确
+    4. 根据传入的图片编码获取对应的真实验证码内容
+    5. 对用户输入的验证码进行对比验证是否输入正确
+    6. 初始化 user 模型，并设置数据并添加到数据库
+    7. 保存当前用户的状态
+    8. 返回注册的结果
+    :return:
+    """
+    # 获取请求体
+    parma_dict = request.json
+    # parma_dict = dict(eval(request.data))
+    # 手机号码
+    mobile = parma_dict.get("mobile")
+    # 用户输入的验证码
+    image_code = parma_dict.get("image_code")
+    # 图形验证码编号
+    image_code_id = parma_dict.get("image_code_id")
+    return ""

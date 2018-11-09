@@ -1,17 +1,28 @@
 $(function () {
-
+    // 实例化vue
     vm = new Vue({
+        // 指定标签
         el: "#app",
+        // 设置语法模板
         delimiters: ["{[", "]}"],
+        // 属性字典
         data: {
+            // 获取cookie中csrf_token -- CSRF防范
+            csrf_token: getCookie("csrf_token"),
             image_src: "../../static/news/images/pic_code.png",
+            image_uuid: 0,
             get_code_str: "60秒",
             get_code_cli: true,
         },
+        // 方法字典
         methods: {
-            // 定义一个json请求函数, 后面补充
+            // 定义一个json请求函数, 后面补充 -- 发送短信验证码
             send_sms() {
             },
+            // 定义一个json请求函数, 后面补充 -- 新用户注册
+            register() {
+            },
+
         },
     });
 
@@ -65,7 +76,7 @@ $(function () {
     // 打开注册框
     $('.register_btn').click(function () {
         $('.register_form_con').show();
-        // 打开注册框架时调用`获取图片验证码`函数
+        // 打开注册框架时调用`获取图形验证码`函数
         generateImageCode();
     });
 
@@ -74,7 +85,7 @@ $(function () {
     $('.to_register').click(function () {
         $('.login_form_con').hide();
         $('.register_form_con').show();
-        // 打开注册框架时调用`获取图片验证码`函数
+        // 打开注册框架时调用`获取图形验证码`函数
         generateImageCode();
     });
 
@@ -145,21 +156,33 @@ $(function () {
         var mobile = $("#register_mobile").val();
         var smscode = $("#smscode").val();
         var password = $("#register_password").val();
+        var imageCode = $("#imagecode").val();
 
+        $("#register-mobile-err").hide();
         if (!mobile) {
+            $("#register-mobile-err").html("请填写正确的手机号！");
             $("#register-mobile-err").show();
             return;
         }
+        $("#register-image-code-err").hide();
+        if (!imageCode) {
+            $("#register-image-code-err").html("请填写验证码！");
+            $("#register-image-code-err").show();
+            return;
+        }
+        $("#register-sms-code-err").hide();
         if (!smscode) {
+            $("#register-sms-code-err").html("请填写短信验证码");
             $("#register-sms-code-err").show();
             return;
         }
+        $("#register-password-err").hide();
         if (!password) {
             $("#register-password-err").html("请填写密码!");
             $("#register-password-err").show();
             return;
         }
-
+        $("#register-password-err").hide();
         if (password.length < 6) {
             $("#register-password-err").html("密码长度不能少于6位");
             $("#register-password-err").show();
@@ -169,11 +192,14 @@ $(function () {
         // 注册参数
         var params = {
             "mobile": mobile,
+            "image_code": imageCode,
+            "image_code_id": vm.image_uuid,
             "sms_code": smscode,
             "password": password
         };
 
         // TODO 发起注册请求
+        alert(vm.csrf_token);
     });
 
     // TODO 用户退出功能
@@ -185,14 +211,16 @@ $(function () {
 // 图片uuid
 var imageCodeId = "";
 
-// TODO 生成一个图片验证码的编号，并设置页面中图片验证码img标签的src属性
+// TODO 生成一个图形验证码的编号，并设置页面中图形验证码img标签的src属性
 function generateImageCode() {
     // 生成uuid
     imageCodeId = generateUUID();
     // json请求地址
     var imageCodeUrl = "/passport/image_code?code_id=" + imageCodeId;
-    // 设置 图片验证码 url
+    // 设置 图形验证码 url
     vm.image_src = imageCodeUrl
+    // 设置 图形验证码 uuid
+    vm.image_uuid = imageCodeId
 
 }
 
@@ -213,8 +241,6 @@ function sendSMSCode() {
         $("#register-image-code-err").show();
         return;
     }
-    // 获取csrf_token -- CSRF防范
-    csrf_token = $("#csrf_token").val()
     // TODO 发送短信验证码
     // 组织参数
     var params = {
@@ -246,9 +272,11 @@ function sendSMSCode() {
     // TODO 发送ajax请求，请求发送短信验证码
     // 隐藏短信验证码错误信息框
     $("#register-sms-code-err").hide();
+
+    // 调用vm的方法
     vm.send_sms()
-    {   // ajax post请求
-        axios.post("/passport/send_sms", params, {headers: {'X-CSRFToken': csrf_token}})
+    {   // ajax post请求 -- 设置请求头信息
+        axios.post("/passport/send_sms", params, {headers: {'X-CSRFToken': vm.csrf_token, "Content-Type": "application/json"}})
         // 成功访问
             .then(function (response) {
                 // 返回状态码
