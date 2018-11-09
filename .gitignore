@@ -3,6 +3,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 .idea
+logs/log
+logs/log*
 +logs/log*
 
 # C extensions
@@ -16,8 +18,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
 parts/
 sdist/
 var/

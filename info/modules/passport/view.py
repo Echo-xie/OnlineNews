@@ -4,7 +4,7 @@ date: 18-11-9 上午9:18
 """
 import logging
 
-from flask import request, current_app, jsonify, make_response
+from flask import request, jsonify, make_response
 
 from . import passport_blu
 # 生成验证码库
@@ -13,12 +13,11 @@ from info import constants
 from info.utils.response_code import RET
 
 
-
 # 定义路由函数
 @passport_blu.route("/image_code")
 def image_code():
     """
-        获取 图片验证码
+        获取 图片验证码 -- json访问
     :return: 验证码图片
     """
     # 获取uuid
@@ -44,3 +43,19 @@ def image_code():
     response.headers["Content-Type"] = "image/jpg"
     # 返回
     return response
+
+
+# 定义路由函数
+@passport_blu.route("/send_sms", methods=["POST"])
+def send_sms():
+    """
+        发送短信
+    流程:
+    1. 接收参数并判断是否有数据
+    2. 验证手机号码是否正确
+    3. 根据输入的图片编码获取对应的真实验证码内容
+    4. 对验证码进行对比验证是否输入正确
+    5. 生成并发送短信
+    6.
+    :return:
+    """

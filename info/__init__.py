@@ -27,7 +27,7 @@ def create_app(config_name):
     :return: app -- Flask实例化
     """
     # 配置项目日志
-    # setup_log(config_name)
+    setup_log(config_name)
     # 根据配置文件名称加载配置文件
     config_cls = config[config_name]
     """app实例化配置"""
