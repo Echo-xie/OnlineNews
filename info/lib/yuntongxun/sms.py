@@ -6,7 +6,7 @@ from .CCPRestSDK import REST
 _accountSid = '8a216da866d35e6e0166ddec88440444'
 
 # 说明：主账号Token，登陆云通讯网站后，可在控制台-应用中看到开发者主账号AUTH TOKEN
-_accountToken = '8a216da866d35e6e0166ddec88440444'
+_accountToken = 'eaf07a25311243328dc8af940247ae79'
 
 # 请使用管理控制台首页的APPID或自己创建应用的APPID
 _appId = '8a216da866d35e6e0166ddec888c044a'
@@ -72,4 +72,4 @@ class CCP(object):
 if __name__ == '__main__':
     ccp = CCP()
     # 注意： 测试的短信模板编号为1
-    ccp.send_template_sms('18516952650', ['1234', 5], 1)
+    ccp.send_template_sms('13318766890', ['1234', 5], 1)

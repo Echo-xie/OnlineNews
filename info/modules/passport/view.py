@@ -21,12 +21,12 @@ from info.utils.response_code import RET
 @passport_blu.route("/image_code")
 def image_code():
     """
-        获取 图片验证码 -- json访问
+        获取 图形验证码 -- json访问
     :return: 验证码图片
     """
     # 获取uuid
     code_id = request.args.get("code_id")
-    # 生成图片验证码 ( 文件名, 验证码内容, 验证码图片 )
+    # 生成图形验证码 ( 文件名, 验证码内容, 验证码图片 )
     name, text, image = captcha.generate_captcha()
     # 捕获异常
     try:
@@ -40,7 +40,7 @@ def image_code():
         # current_app.logging.error(e)
         logging.error(e)
         # 返回json格式数据 -- 保存失败
-        return make_response(jsonify(errno=RET.DATAERR, errmsg='保存图片验证码失败'))
+        return make_response(jsonify(errno=RET.DATAERR, errmsg='保存图形验证码失败'))
     # 根据图片生成响应体
     response = make_response(image)
     # 设置响应头 -- 数据类型
@@ -57,7 +57,7 @@ def send_sms():
     传入参数: json格式
     mobile: 手机号码
     image_code: 用户输入的验证码
-    image_code_id: 图片验证码编号
+    image_code_id: 图形验证码编号
 
     流程:
     1. 接收参数并判断参数数据是否正确
@@ -69,12 +69,13 @@ def send_sms():
     :return: 成功发送短信响应
     """
     # 获取请求体
-    parma_dict = request.json
+    # parma_dict = request.json
+    parma_dict = dict(eval(request.data))
     # 手机号码
     mobile = parma_dict.get("mobile")
     # 用户输入的验证码
     image_code = parma_dict.get("image_code")
-    # 图片验证码编号
+    # 图形验证码编号
     image_code_id = parma_dict.get("image_code_id")
 
     """1. 接收参数并判断参数数据是否正确"""
@@ -99,7 +100,7 @@ def send_sms():
         # 该手机已被注册
         return jsonify(errno=RET.DATAEXIST, errmsg="该手机已被注册")
     """3. 根据传入的图片编码获取对应的真实验证码内容"""
-    # 根据图片验证码编号获取数据库中真实的验证码内容
+    # 根据图形验证码编号获取数据库中真实的验证码内容
     try:
         from info import redis_db
         # 数据库获取数据
@@ -113,16 +114,16 @@ def send_sms():
     except Exception as e:
         logging.error(e)
         # 数据库获取数据失败
-        return jsonify(errno=RET.DBERR, errmsg="获取图片验证码失败")
+        return jsonify(errno=RET.DBERR, errmsg="获取图形验证码失败")
     # 判断验证码是否过期
     if not real_iamge_code:
         # 验证码已过期
-        return jsonify(errno=RET.NODATA, errmsg="验证码已过期")
+        return jsonify(errno=RET.NODATA, errmsg="图形验证码已过期")
     """4. 对用户输入的验证码进行对比验证是否输入正确"""
     # 对用户输入的验证码进行比对验证
     if image_code.lower() != real_iamge_code.lower():
         # 验证码输入错误
-        return jsonify(errno=RET.DATAERR, errmsg="验证码输入错误")
+        return jsonify(errno=RET.DATAERR, errmsg="图形验证码输入错误")
     """5. 生成并发送短信, 短信内容保存数据库"""
     # 生成随机数
     rand_code = random.randint(0, 999999)
