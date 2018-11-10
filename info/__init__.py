@@ -44,6 +44,9 @@ def create_app(config_name):
     # 验证/通行证蓝图
     from info.modules.passport import passport_blu
     app.register_blueprint(passport_blu)
+    # 新闻蓝图
+    from info.modules.news import news_blu
+    app.register_blueprint(news_blu)
     """数据库配置"""
     # 配置数据库 -- 根据app加载的配置信息
     mysql_db.init_app(app)

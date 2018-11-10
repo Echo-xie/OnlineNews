@@ -2,7 +2,6 @@
     首页路由
 date: 18-11-8 下午8:24
 """
-import logging
 from flask import render_template, current_app, session, request, jsonify
 from flask_wtf.csrf import generate_csrf
 
@@ -14,6 +13,7 @@ from . import index_blu
 
 # 定义路由函数 -- 首页
 @index_blu.route("/")
+@index_blu.route("/index")
 def index():
     """
         路由函数
