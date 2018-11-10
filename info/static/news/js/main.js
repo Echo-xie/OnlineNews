@@ -205,7 +205,7 @@ $(function () {
                         location.reload()
                     } else {
                         // 显示错误信息
-                        $("#register-password-err").html(resp.errmsg)
+                        $("#register-password-err").html(errmsg)
                         $("#register-password-err").show()
                     }
                 })

@@ -3,10 +3,10 @@
 date: 18-11-9 上午9:18
 """
 import redis
-from info import redis_pool, REDIS_POOL_SELECT_0
+from info import redis_pool, REDIS_POOL_SELECT_0, mysql_db
 import random
 import re
-from flask import request, jsonify, make_response, current_app
+from flask import request, jsonify, make_response, current_app, session
 from info.utils.yuntongxun.sms import CCP
 from info.models import User
 from . import passport_blu
@@ -203,8 +203,45 @@ def register():
         # 该手机已被注册
         return jsonify(errno=RET.DATAEXIST, errmsg="该手机已被注册")
     """3. 对用户输入的短信验证码进行对比验证是否输入正确"""
-    # real_sms_code =
+    try:
+        # 获取数据库真实短信验证码
+        real_sms_code = get_redis().get("SMS_" + mobile)
+        # 如果获取 成功
+        if real_sms_code:
+            real_sms_code = real_sms_code.decode()
+    except Exception as e:
+        # 获取数据库失败, 写日志
+        current_app.logger.error(e)
+        # 返回错误信息
+        return jsonify(errno=RET.DBERR, errmsg="获取短信验证码失败")
+    # 如果真实短信验证码不存在
+    if not real_sms_code:
+        # 返回过期信息
+        return jsonify(errno=RET.DATAERR, errmsg="短信验证码过期")
+    # 对比验证用户输入短信验证码是否输入正确
+    if sms_code != real_sms_code:
+        # 返回输入错误信息
+        return jsonify(errno=RET.DATAERR, errmsg="短信验证码输入错误")
     """4. 初始化 user 模型，并设置数据并添加到数据库"""
+    user = User(mobile=mobile, nick_name="手机用户:" + mobile, password=password)
+    try:
+        # 插入数据库
+        mysql_db.session.add(user)
+        # 事务提交
+        mysql_db.session.commit()
+    except Exception as e:
+        # 数据库错误, 写日志
+        current_app.logger.error(e)
+        # 事务回滚
+        mysql_db.session.rollback()
+        # 返回错误信息
+        return jsonify(errno=RET.DBERR, errmsg="数据保存失败")
     """5. 保存当前用户的状态"""
+    # 用户ID
+    session["user_id"] = user.id
+    # 用户昵称
+    session["nick_name"] = user.nick_name
+    # 用户手机
+    session["mobile"] = user.mobile
     """6. 返回注册的结果"""
     return jsonify(errno=RET.OK, errmsg="新用户注册成功")
