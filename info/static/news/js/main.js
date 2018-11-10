@@ -22,6 +22,9 @@ $(function () {
             // 定义一个json请求函数, 后面补充 -- 新用户注册
             register() {
             },
+            // 定义一个json请求函数, 后面补充 -- 用户登陆
+            login() {
+            },
 
         },
     });
@@ -34,6 +37,7 @@ $(function () {
     // 点击关闭按钮关闭登录框或者注册框
     $('.shutoff').click(function () {
         $(this).closest('form').hide();
+        $(this).closest('form')[0].reset();
     });
 
     // 隐藏错误
@@ -126,11 +130,13 @@ $(function () {
         var mobile = $(".login_form #mobile").val();
         var password = $(".login_form #password").val();
 
+        $("#login-mobile-err").hide();
         if (!mobile) {
             $("#login-mobile-err").show();
             return;
         }
 
+        $("#login-password-err").hide();
         if (!password) {
             $("#login-password-err").show();
             return;
@@ -143,7 +149,31 @@ $(function () {
         };
 
         // TODO 发起登录请求
-
+        vm.login()
+        {   // ajax post请求,
+            axios.post("/passport/login", params, {headers: {'X-CSRFToken': vm.csrf_token, "Content-Type": "application/json"}})
+            // 请求访问成功
+                .then(function (response) {
+                    // 响应状态码
+                    let errno = response.data.errno;
+                    // 响应信息
+                    let errmsg = response.data.errmsg;
+                    //  状态码 -- 成功
+                    if (errno == 0) {
+                        // 刷新页面
+                        location.reload()
+                    } else {
+                        // 显示错误信息
+                        $("#login-password-err").html(errmsg)
+                        $("#login-password-err").show()
+                    }
+                })
+                // 请求访问失败
+                .catch(function (error) {
+                    // 错误信息
+                    console.log(error);
+                });
+        }
     });
 
 
@@ -156,6 +186,7 @@ $(function () {
         var mobile = $("#register_mobile").val();
         var smscode = $("#smscode").val();
         var password = $("#register_password").val();
+        var agree_input = $(".agree_input").is(":checked")
 
         $("#register-mobile-err").hide();
         if (!mobile) {
@@ -179,6 +210,11 @@ $(function () {
         if (password.length < 6) {
             $("#register-password-err").html("密码长度不能少于6位");
             $("#register-password-err").show();
+            return;
+        }
+        $("#register-agree-input-err").hide()
+        if (!agree_input) {
+            $("#register-agree-input-err").show()
             return;
         }
 

@@ -2,6 +2,8 @@
     验证/通行证视图
 date: 18-11-9 上午9:18
 """
+from datetime import datetime
+
 import redis
 from info import redis_pool, REDIS_POOL_SELECT_0, mysql_db
 import random
@@ -245,3 +247,55 @@ def register():
     session["mobile"] = user.mobile
     """6. 返回注册的结果"""
     return jsonify(errno=RET.OK, errmsg="新用户注册成功")
+
+
+@passport_blu.route("/login", methods=["POST"])
+def login():
+    """
+        用户登陆
+    :return:
+    """
+    # 获取用户提交的数据
+    data_dict = request.json
+    # 获取手机号码
+    mobile = data_dict.get("mobile")
+    # 获取密码
+    password = data_dict.get("password")
+    # 验证传入的数据是否有值
+    if not all([mobile, password]):
+        # 返回参数不齐信息
+        return jsonify(errno=RET.DATAERR, errmsg="参数不齐")
+    try:
+        # 查询数据库是否有此手机号码的用户
+        user = User.query.filter(User.mobile == mobile).first()
+    except Exception as e:
+        # 写日志
+        current_app.logger.error(e)
+        # 返回查询数据失败信息
+        return jsonify(errno=RET.DBERR, errmsg="查询数据失败")
+    # 查询成功, 但是无用户数据
+    if not user:
+        # 返回用户不存在信息
+        return jsonify(errno=RET.USERERR, errmsg="用户不存在")
+    # 如果密码错误
+    if not user.check_passowrd(password):
+        # 返回密码错误信息
+        return jsonify(errno=RET.PARAMERR, errmsg="密码错误")
+    # 登陆成功, 设置用户信息
+    # 用户ID
+    session["user_id"] = user.id
+    # 用户昵称
+    session["nick_name"] = user.nick_name
+    # 用户手机
+    session["mobile"] = user.mobile
+    # 更新用户最后一次登陆时间
+    user.last_login = datetime.now()
+    try:
+        # 事务提交
+        mysql_db.session.commit()
+    except Exception as e:
+        # 写日志
+        current_app.logger.error(e)
+        # 事务回滚
+        mysql_db.session.rollback()
+    return jsonify(errno=RET.OK, errmsg="登陆成功")
