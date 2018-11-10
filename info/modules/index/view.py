@@ -6,7 +6,8 @@ import logging
 from flask import render_template, current_app, session
 from flask_wtf.csrf import generate_csrf
 
-from info.models import User
+from info import constants
+from info.models import User, News
 from . import index_blu
 
 
@@ -19,17 +20,39 @@ def index():
     """
     # 获取当前登陆用户ID
     user_id = session.get("user_id")
+    # 用户信息
     user_info = None
     try:
         # 通过user_id获取用户信息
         user = User.query.filter(User.id == user_id).first()
-        # user信息封装字典
-        user_info = user.to_dict()
+        if user:
+            # user信息封装字典
+            user_info = user.to_dict()
     except Exception as e:
         # 写日志
         current_app.logger.error(e)
+    # 新闻信息列表
+    news_list = []
+    try:
+        # 访问数据库 获取新闻点击排序数据, 数量最大值为 constants.CLICK_RANK_MAX_NEWS
+        news_list = News.query.order_by(News.clicks.desc()).limit(constants.CLICK_RANK_MAX_NEWS)
+    except Exception as e:
+        current_app.logger.error(e)
+
+    # 点击排行列表
+    click_news_list = []
+    # 循环 -- 三目运算 判断 news_list 是否获取到数据
+    for news in news_list if news_list else []:
+        # 由于是懒加载, news_list是没有具体的值的, 只有调用获取news时, 才去数据库加载数据, 所有需要转换一次
+        click_news_list.append(news.to_basic_dict())
+
+    # 设置数据
+    data = {
+        "user_info": user_info,
+        "click_news_list": click_news_list,
+    }
     # 返回并携带用户信息
-    return render_template("news/index.html", data={"user_info": user_info})
+    return render_template("news/index.html", data=data)
 
 
 # 定义路由函数 -- 必定是此路由, 请求网站小图标

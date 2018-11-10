@@ -13,6 +13,8 @@ from flask_session import Session
 from info.constants import REDIS_POOL_SELECT_0
 
 # 实例化MySQL数据库
+from info.utils.common import do_index_class
+
 mysql_db = SQLAlchemy()
 # Redis连接池
 redis_pool = {}
@@ -33,6 +35,8 @@ def create_app(config_name):
     app = Flask(__name__)
     # 设置配置文件
     app.config.from_object(config_cls)
+    # 添加jinja2过滤器
+    app.add_template_filter(do_index_class, "index_class")
     """注册蓝图"""
     # 首页蓝图
     from info.modules.index import index_blu
