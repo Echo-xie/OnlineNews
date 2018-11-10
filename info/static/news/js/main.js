@@ -13,6 +13,7 @@ $(function () {
             image_uuid: 0,
             get_code_str: "60秒",
             get_code_cli: true,
+            user_info: $("#user_info").val(),
         },
         // 方法字典
         methods: {
@@ -26,6 +27,14 @@ $(function () {
             login() {
             },
 
+        },
+        // 自定义过滤器
+        filters: {},
+        // 计算器
+        computed: {
+            is_login: function () {
+                return true ? (this.user_info && this.user_info != "None") : false
+            }
         },
     });
 

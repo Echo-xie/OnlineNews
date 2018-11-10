@@ -3,9 +3,10 @@
 date: 18-11-8 下午8:24
 """
 import logging
-from flask import render_template, current_app
+from flask import render_template, current_app, session
 from flask_wtf.csrf import generate_csrf
 
+from info.models import User
 from . import index_blu
 
 
@@ -16,8 +17,19 @@ def index():
         路由函数
     :return:
     """
-    logging.debug("调试日志")
-    return render_template("news/index.html")
+    # 获取当前登陆用户ID
+    user_id = session.get("user_id")
+    user_info = None
+    try:
+        # 通过user_id获取用户信息
+        user = User.query.filter(User.id == user_id).first()
+        # user信息封装字典
+        user_info = user.to_dict()
+    except Exception as e:
+        # 写日志
+        current_app.logger.error(e)
+    # 返回并携带用户信息
+    return render_template("news/index.html", data={"user_info": user_info})
 
 
 # 定义路由函数 -- 必定是此路由, 请求网站小图标

@@ -111,6 +111,26 @@ class User(BaseModel, db.Model):
         # 解密后, 对比密码是否正确
         return check_password_hash(self.password_hash, password)
 
+    def to_dict(self):
+        """
+            把对象数据转换为字典数据
+        """
+        # 封装字典
+        resp_dict = {
+            "id": self.id,
+            "nick_name": self.nick_name,
+            "mobile": self.mobile,
+            "avatar_url": self.avatar_url,
+            "is_admin": self.is_admin,
+            "signature": self.signature,
+            "gender": self.gender,
+            "last_login": self.last_login.strftime("%Y-%m-%d %H:%M:%S"),
+            "create_time": self.create_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "update_time": self.update_time.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        # 返回字典
+        return resp_dict
+
 
 class News(BaseModel, db.Model):
     """
