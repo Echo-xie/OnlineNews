@@ -3,11 +3,12 @@
 date: 18-11-8 下午8:24
 """
 import logging
-from flask import render_template, current_app, session
+from flask import render_template, current_app, session, request, jsonify
 from flask_wtf.csrf import generate_csrf
 
 from info import constants
 from info.models import User, News, Category
+from info.response_code import RET
 from . import index_blu
 
 
@@ -65,6 +66,57 @@ def index():
     }
     # 返回并携带用户信息
     return render_template("news/index.html", data=data)
+
+
+@index_blu.route("/newslist")
+def get_news_list():
+    """
+        获取指定类型新闻列表
+    :return:
+    """
+    # 获取传入参数
+    args_dict = request.args
+    # 页码
+    page = args_dict.get("page")
+    # 每页数量
+    per_page = args_dict.get("per_page", constants.HOME_PAGE_MAX_NEWS)
+    # 分类ID
+    category_id = args_dict.get("cid", '1')
+    try:
+        # 转型
+        page = int(page)
+        # 转型
+        per_page = int(per_page)
+    except Exception as e:
+        current_app.looger.error(e)
+        return jsonify(errno=RET.PARAMERR, errmsg="参数类型错误")
+    # 条件
+    filters = []
+    # 如果分类id不为1，那么添加分类id的过滤
+    if category_id != "1":
+        # 添加条件
+        filters.append(News.category_id == category_id)
+    try:
+        # 根据条件查询数据库, 按创建时间倒叙, 分页查询, 不报错
+        paginate = News.query.filter(*filters).order_by(News.create_time.desc()).paginate(page, per_page, False)
+        # 获取查询出来的数据
+        items = paginate.items
+        # 获取到总页数
+        total_page = paginate.pages
+        # 当前页码
+        current_page = paginate.page
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg="数据查询失败")
+    # 新闻列表
+    news_li = []
+    # 循环
+    for news in items:
+        # 封装新闻列表
+        news_li.append(news.to_basic_dict())
+
+    # 返回数据
+    return jsonify(errno=RET.OK, errmsg="OK", totalPage=total_page, currentPage=current_page, newsList=news_li, cid=category_id)
 
 
 # 定义路由函数 -- 必定是此路由, 请求网站小图标
