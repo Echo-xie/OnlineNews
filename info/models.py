@@ -236,3 +236,16 @@ class Category(BaseModel, db.Model):
     name = db.Column(db.String(64), nullable=False)  # 分类名
     # 当前新闻分类的具体新闻 -- 关系 ( 新闻表, 反向引用--新闻表中的新闻分类, 懒加载 )
     news_list = db.relationship('News', backref='category', lazy='dynamic')
+
+    def to_dict(self):
+        """
+            把对象数据转换为字典数据
+        """
+        # 封装字典
+        resp_dict = {
+            "id": self.id,
+            "create_time": self.create_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "name": self.name,
+        }
+        # 返回字典
+        return resp_dict
