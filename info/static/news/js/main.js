@@ -26,6 +26,9 @@ $(function () {
             // 定义一个json请求函数, 后面补充 -- 用户登陆
             login() {
             },
+            // 定义一个json请求函数, 后面补充 -- 用户登出
+            logout() {
+            },
 
         },
         // 自定义过滤器
@@ -170,11 +173,11 @@ $(function () {
                     //  状态码 -- 成功
                     if (errno == 0) {
                         // 刷新页面
-                        location.reload()
+                        location.reload();
                     } else {
                         // 显示错误信息
-                        $("#login-password-err").html(errmsg)
-                        $("#login-password-err").show()
+                        $("#login-password-err").html(errmsg);
+                        $("#login-password-err").show();
                     }
                 })
                 // 请求访问失败
@@ -221,9 +224,9 @@ $(function () {
             $("#register-password-err").show();
             return;
         }
-        $("#register-agree-input-err").hide()
+        $("#register-agree-input-err").hide();
         if (!agree_input) {
-            $("#register-agree-input-err").show()
+            $("#register-agree-input-err").show();
             return;
         }
 
@@ -247,11 +250,11 @@ $(function () {
                     //  状态码 -- 成功
                     if (errno == 0) {
                         // 刷新页面
-                        location.reload()
+                        location.reload();
                     } else {
                         // 显示错误信息
-                        $("#register-password-err").html(errmsg)
-                        $("#register-password-err").show()
+                        $("#register-password-err").html(errmsg);
+                        $("#register-password-err").show();
                     }
                 })
                 // 请求访问失败
@@ -264,7 +267,16 @@ $(function () {
 
     // TODO 用户退出功能
     $('#logout').click(function () {
-
+        vm.logout()
+        {
+            axios.post("/passport/logout", "", {headers: {'X-CSRFToken': vm.csrf_token}})
+                .then(function (response) {
+                    //
+                    alert("成功退出系统");
+                    // 刷新页面
+                    location.reload();
+                })
+        }
     })
 
 });
@@ -278,9 +290,9 @@ function generateImageCode() {
     // json请求地址
     var imageCodeUrl = "/passport/image_code?code_id=" + imageCodeId;
     // 设置 图形验证码 url
-    vm.image_src = imageCodeUrl
+    vm.image_src = imageCodeUrl;
     // 设置 图形验证码 uuid
-    vm.image_uuid = imageCodeId
+    vm.image_uuid = imageCodeId;
 
 }
 

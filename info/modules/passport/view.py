@@ -299,3 +299,20 @@ def login():
         # 事务回滚
         mysql_db.session.rollback()
     return jsonify(errno=RET.OK, errmsg="登陆成功")
+
+
+# 定义路由函数 -- 登出
+@passport_blu.route("/logout", methods=["POST"])
+def logout():
+    """
+        用户登出
+    :return:
+    """
+    # 移除 user_id
+    session.pop('user_id', None)
+    # 移除 nick_name
+    session.pop('nick_name', None)
+    # 移除 mobile
+    session.pop('mobile', None)
+    # 返回
+    return jsonify(error=RET.OK, errmsg="ok")
