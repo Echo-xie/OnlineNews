@@ -78,13 +78,3 @@ def setup_log(config_name):
     file_log_handler.setFormatter(formatter)
     # 为全局日志工具对象设置日志处理器
     logging.getLogger().addHandler(file_log_handler)
-
-
-class constants(object):
-    """
-        常量数据
-    """
-    # 图片验证码超时时间 3 分钟
-    IMAGE_CODE_REDIS_EXPIRES = 3 * 60
-    # 短信验证码超时时间 3 分钟
-    SMS_CODE_REDIS_EXPIRES = 3 * 60

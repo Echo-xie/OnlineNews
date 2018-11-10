@@ -156,18 +156,11 @@ $(function () {
         var mobile = $("#register_mobile").val();
         var smscode = $("#smscode").val();
         var password = $("#register_password").val();
-        var imageCode = $("#imagecode").val();
 
         $("#register-mobile-err").hide();
         if (!mobile) {
             $("#register-mobile-err").html("请填写正确的手机号！");
             $("#register-mobile-err").show();
-            return;
-        }
-        $("#register-image-code-err").hide();
-        if (!imageCode) {
-            $("#register-image-code-err").html("请填写验证码！");
-            $("#register-image-code-err").show();
             return;
         }
         $("#register-sms-code-err").hide();
@@ -192,14 +185,36 @@ $(function () {
         // 注册参数
         var params = {
             "mobile": mobile,
-            "image_code": imageCode,
-            "image_code_id": vm.image_uuid,
             "sms_code": smscode,
             "password": password
         };
 
         // TODO 发起注册请求
-        alert(vm.csrf_token);
+        vm.register()
+        {   // ajax post请求,
+            axios.post("/passport/register", params, {headers: {'X-CSRFToken': vm.csrf_token, "Content-Type": "application/json"}})
+            // 请求访问成功
+                .then(function (response) {
+                    // 响应状态码
+                    let errno = response.data.errno;
+                    // 响应信息
+                    let errmsg = response.data.errmsg;
+                    //  状态码 -- 成功
+                    if (errno == 0) {
+                        // 刷新页面
+                        location.reload()
+                    } else {
+                        // 显示错误信息
+                        $("#register-password-err").html(resp.errmsg)
+                        $("#register-password-err").show()
+                    }
+                })
+                // 请求访问失败
+                .catch(function (error) {
+                    // 错误信息
+                    console.log(error);
+                });
+        }
     });
 
     // TODO 用户退出功能
@@ -248,27 +263,6 @@ function sendSMSCode() {
         "image_code": imageCode,
         "image_code_id": imageCodeId
     };
-    // 设置不可点击, 并且倒计时开始
-    vm.get_code_cli = false
-    // 定时器 -- 1分钟只能请求一次短信验证码
-    var num = 60;
-    // 设置定时器
-    var t = setInterval(function () {
-        // 下一秒就会取消倒计时
-        if (num == 1) {
-            // 取消计时器
-            clearInterval(t)
-            // 显示可点击
-            vm.get_code_cli = true;
-            // 初始化
-            vm.get_code_str = "60秒";
-        } else {
-            // 倒计时
-            num -= 1;
-            // 显示倒计时
-            vm.get_code_str = num + "秒";
-        }
-    }, 1000);
     // TODO 发送ajax请求，请求发送短信验证码
     // 隐藏短信验证码错误信息框
     $("#register-sms-code-err").hide();
@@ -302,6 +296,28 @@ function sendSMSCode() {
                 if (errno != 0) {
                     // 重新生成验证码
                     generateImageCode()
+                } else {
+                    // 设置不可点击, 并且倒计时开始
+                    vm.get_code_cli = false
+                    // 定时器 -- 1分钟只能请求一次短信验证码
+                    var num = 60;
+                    // 设置定时器
+                    var t = setInterval(function () {
+                        // 下一秒就会取消倒计时
+                        if (num == 1) {
+                            // 取消计时器
+                            clearInterval(t)
+                            // 显示可点击
+                            vm.get_code_cli = true;
+                            // 初始化
+                            vm.get_code_str = "60秒";
+                        } else {
+                            // 倒计时
+                            num -= 1;
+                            // 显示倒计时
+                            vm.get_code_str = num + "秒";
+                        }
+                    }, 1000);
                 }
             })
             // 访问失败
