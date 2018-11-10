@@ -30,3 +30,6 @@ ADMIN_USER_PAGE_MAX_COUNT = 10
 
 # 管理员页面新闻每页多最数据条数
 ADMIN_NEWS_PAGE_MAX_COUNT = 10
+
+# Redis数据库选择
+REDIS_POOL_SELECT_0 = "pool_0"

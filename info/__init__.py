@@ -4,20 +4,18 @@ date: 18-11-8 上午6:54
 """
 import logging
 from logging.handlers import RotatingFileHandler
-
 from flask import Flask
 from config import config
 from flask_sqlalchemy import SQLAlchemy
 import redis
 from flask_wtf.csrf import CSRFProtect
 from flask_session import Session
+from info.constants import REDIS_POOL_SELECT_0
 
 # 实例化MySQL数据库
 mysql_db = SQLAlchemy()
 # Redis连接池
 redis_pool = {}
-# Redis数据库
-redis_db = None
 
 
 def create_app(config_name):
@@ -48,11 +46,8 @@ def create_app(config_name):
     # 实例化Redis连接池
     pool_0 = redis.ConnectionPool(host=config_cls.REDIS_HOST, port=config_cls.REDIS_PORT, password=config_cls.REDIS_PASSWORD, db=config_cls.REDIS_DATA_DB)
     # 添加连接池
-    redis_pool["pool_0"] = pool_0
     # 通过连接池实例化Redis数据库 -- 当需要调用某个具体的数据库才去调用相应的连接池, 减少新建和释放的资源
-    global redis_db
-    # redis_db = redis.Redis(connection_pool=redis_pool["pool_0"])
-    redis_db = redis.StrictRedis(connection_pool=redis_pool["pool_0"])
+    redis_pool[REDIS_POOL_SELECT_0] = pool_0
     """app的额外配置"""
     # 开启csrf的防范机制
     CSRFProtect(app)

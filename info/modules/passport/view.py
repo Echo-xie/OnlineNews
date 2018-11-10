@@ -2,12 +2,11 @@
     验证/通行证视图
 date: 18-11-9 上午9:18
 """
-import logging
+import redis
+from info import redis_pool, REDIS_POOL_SELECT_0
 import random
 import re
-
 from flask import request, jsonify, make_response, current_app
-
 from info.utils.yuntongxun.sms import CCP
 from info.models import User
 from . import passport_blu
@@ -15,6 +14,15 @@ from . import passport_blu
 from info.utils.captcha.captcha import captcha
 from info import constants
 from info.response_code import RET
+
+
+def get_redis(select=REDIS_POOL_SELECT_0):
+    """
+        根据select返回相应数据库
+    :param select: 数据库key
+    :return: 数据库连接
+    """
+    return redis.StrictRedis(connection_pool=redis_pool[select])
 
 
 # 定义路由函数
@@ -31,9 +39,10 @@ def image_code():
     # 捕获异常
     try:
         # 使用时才导入, 不要放在文件头, 文件头没有上下文环境
-        from info import redis_db
+        # from info import redis_db
         # 设置限时数据 (key, 限时时间, value)
-        redis_db.setex('ImageCode_' + code_id, constants.IMAGE_CODE_REDIS_EXPIRES, text)
+        # redis_db = redis.StrictRedis(connection_pool=redis_pool["pool_0"])
+        get_redis().setex('ImageCode_' + code_id, constants.IMAGE_CODE_REDIS_EXPIRES, text)
     # 处理异常
     except Exception as e:
         # 写日志 -- error级别
@@ -101,15 +110,14 @@ def send_sms():
     """3. 根据传入的图片编码获取对应的真实验证码内容"""
     # 根据图形验证码编号获取数据库中真实的验证码内容
     try:
-        from info import redis_db
         # 数据库获取数据
-        real_iamge_code = redis_db.get("ImageCode_" + image_code_id)
+        real_iamge_code = get_redis().get("ImageCode_" + image_code_id)
         # 如果数据获取成功
         if real_iamge_code:
             # 转码
             real_iamge_code = real_iamge_code.decode()
             # 删除数据库数据
-            redis_db.delete("ImageCode_" + image_code_id)
+            get_redis().delete("ImageCode_" + image_code_id)
     except Exception as e:
         current_app.logger.error(e)
         # 数据库获取数据失败
@@ -138,7 +146,7 @@ def send_sms():
         return jsonify(errno=RET.THIRDERR, errmsg="发送短信失败")
     try:
         # 保存短信验证码
-        redis_db.set("SMS_" + mobile, sms_code, constants.SMS_CODE_REDIS_EXPIRES)
+        get_redis().set("SMS_" + mobile, sms_code, constants.SMS_CODE_REDIS_EXPIRES)
     except Exception as e:
         current_app.logger.error(e)
         # 保存短信验证码失败
@@ -168,7 +176,6 @@ def register():
     """
     # 获取请求体
     parma_dict = request.json
-    # parma_dict = dict(eval(request.data))
     # 手机号码
     mobile = parma_dict.get("mobile")
     # 短信验证码
@@ -177,8 +184,26 @@ def register():
     password = parma_dict.get("password")
 
     """1. 接收参数并判断参数数据是否正确"""
+    if not all([mobile, sms_code, password]):
+        return jsonify(errno=RET.DATAERR, errmsg="参数不齐")
     """2. 验证手机号码是否正确根据手机号码获取对应真实的短信验证码"""
+    # 如果手机号码不符合匹配规则
+    if not re.match("^1[356789][\d]{9}", mobile):
+        # 手机号码不正确
+        return jsonify(errno=RET.DATAERR, errmsg="手机号码不正确")
+    # 校验该手机是否已经注册
+    try:
+        # 查询用户表是否存在此手机号码
+        user = User.query.filter_by(mobile=mobile).first()
+    except Exception as e:
+        current_app.logger.error(e)
+        # 数据库查询错误
+        return jsonify(errno=RET.DBERR, errmsg="数据库查询错误")
+    if user:
+        # 该手机已被注册
+        return jsonify(errno=RET.DATAEXIST, errmsg="该手机已被注册")
     """3. 对用户输入的短信验证码进行对比验证是否输入正确"""
+    # real_sms_code =
     """4. 初始化 user 模型，并设置数据并添加到数据库"""
     """5. 保存当前用户的状态"""
     """6. 返回注册的结果"""
