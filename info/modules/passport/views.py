@@ -315,7 +315,7 @@ def logout():
     # 移除 mobile
     session.pop('mobile', None)
     # 移除全局g对象中的user信息 -- 如果全局g对象有user属性
-    if g.user:
+    if hasattr(g, "user"):
         del g.user
     # 返回
     return jsonify(error=RET.OK, errmsg="ok")

@@ -6,4 +6,4 @@ from flask import Blueprint
 # 实例化蓝图, 并设置访问前缀
 passport_blu = Blueprint("passport", __name__, url_prefix="/passport")
 
-from . import view
+from . import views

@@ -112,19 +112,3 @@ def get_news_list():
 def favicon():
     # 返回静态文件小图标 -- app上下文发送静态文件
     return current_app.send_static_file('news/favicon.ico')
-
-
-# 定义路由函数 -- 所有请求访问后
-@index_blu.after_request
-def after_request(response):
-    """
-        请求访问后
-    :param response: 响应
-    :return: 响应
-    """
-    # 使用flask_wtf库的方法生成 csrf_token
-    csrf_token = generate_csrf()
-    # 设置cookie
-    response.set_cookie("csrf_token", csrf_token)
-    # 返回
-    return response

@@ -1,4 +1,4 @@
-{% extends "news/base.html" %}
+{% extends 'news/base.html' %}
 {% block titleBlock %}
     文章详情页
 {% endblock %}
@@ -7,6 +7,10 @@
 {% endblock %}
 {% block contentBlock %}
     <div class="detail_con fl">
+        <input type="hidden" id="news_id" value="{{ data.news.id }}">
+        {% if data.user_info %}
+            <input type="hidden" id="user_id" value="{{ data.user_info.id }}">
+        {% endif %}
         <h3>{{ data.news.title }}</h3>
         <div class="detail_about clearfix">
             <span class="time_souce fl">{{ data.news.create_time }} 来源: {{ data.news.source }}</span>
@@ -34,10 +38,11 @@
         {#        <p>#}
         {#            昨天晚间，中国平安公布2017年保费收入，全年该集团控股子公司平安财险、平安人寿、平安养老、平安健康原保险合同保费收入分别为2159.84亿元、3689.34亿元、175.6亿元及21.47亿元，合计约6046.26亿元人民币，同比增28.9%。除此以外，市场传出中国平安旗下的陆金所将于4月分拆于香港上市，估值达600亿美元。</p>#}
         {##}
-
-        <a href="javascript:;" class="collection block-center" data-news-id="1">收藏</a>
-        <a href="javascript:;" class="collected block-center" data-news-id="1" style="display: none"><span class="out">已收藏</span><span class="over">取消收藏</span></a>
-
+        {% if is_collected %}
+            <a href="javascript:;" class="collection block-center">收藏</a>
+        {% else %}
+            <a href="javascript:;" class="collected block-center"><span class="out">已收藏</span><span class="over">取消收藏</span></a>
+        {% endif %}
 
         {% if not data.user_info %}
             <div class="comment_form_logout">
@@ -61,87 +66,87 @@
         </div>
 
         <div class="comment_list_con">
-{#            {% for get_flashed_message in get_flashed_messages %}#}
+            {#            {% for get_flashed_message in get_flashed_messages %}#}
 
-{#            {% endfor %}#}
+            {#            {% endfor %}#}
 
-{#            <div class="comment_list">#}
-{#                <div class="person_pic fl">#}
-{#                    <img src="../../static/news/images/worm.jpg" alt="用户图标">#}
-{#                </div>#}
-{#                <div class="user_name fl">用户张山</div>#}
-{#                <div class="comment_text fl">#}
-{#                    遏制茅台酒价格过快上涨，多渠道供给，就不一定要买，租茅台酒也可以的，租售同权。开发共有产权茅台酒，让老百姓喝得起茅台酒，饮者有其酒。#}
-{#                </div>#}
-{#                <div class="reply_text_con fl">#}
-{#                    <div class="user_name2">用户李思</div>#}
-{#                    <div class="reply_text">#}
-{#                        遏制茅台酒价格过快上涨，多渠道供给，就不一定要买，租茅台酒也可以的，租售同权。开发共有产权茅台酒，让老百姓喝得起茅台酒，饮者有其酒。#}
-{#                    </div>#}
-{#                </div>#}
-{#                <div class="comment_time fl">2017-01-01 00:00:00</div>#}
-{#                <a href="javascript:;" class="comment_up has_comment_up fr" data-comment-id="1">1</a>#}
-{#                <a href="javascript:;" class="comment_reply fr">回复</a>#}
-{#                <from class="reply_form fl">#}
-{#                    <textarea class="reply_input"></textarea>#}
-{#                    <input type="submit" name="" value="回复" data-news-id="1" data-comment-id="1" class="reply_sub fr">#}
-{#                    <input type="reset" name="" value="取消" class="reply_cancel fr">#}
-{#                </from>#}
-{#            </div>#}
-{##}
-{#            <div class="comment_list">#}
-{#                <div class="person_pic fl">#}
-{#                    <img src="../../static/news/images/worm.jpg" alt="用户图标">#}
-{#                </div>#}
-{#                <div class="user_name fl">用户张山</div>#}
-{#                <div class="comment_text fl">#}
-{#                    遏制茅台酒价格过快上涨，多渠道供给，就不一定要买，租茅台酒也可以的，租售同权。开发共有产权茅台酒，让老百姓喝得起茅台酒，饮者有其酒。#}
-{#                </div>#}
-{#                <div class="comment_time fl">2017-01-01 00:00:00</div>#}
-{#                <a href="javascript:;" class="comment_up fr" data-comment-id="2">赞</a>#}
-{#                <a href="javascript:;" class="comment_reply fr">回复</a>#}
-{#                <from class="reply_form fl">#}
-{#                    <textarea class="reply_input"></textarea>#}
-{#                    <input type="submit" name="" value="回复" data-news-id="1" data-comment-id="2" class="reply_sub fr">#}
-{#                    <input type="reset" name="" value="取消" class="reply_cancel fr">#}
-{#                </from>#}
-{#            </div>#}
-{##}
-{#            <div class="comment_list">#}
-{#                <div class="person_pic fl">#}
-{#                    <img src="../../static/news/images/worm.jpg" alt="用户图标">#}
-{#                </div>#}
-{#                <div class="user_name fl">用户张山</div>#}
-{#                <div class="comment_text fl">#}
-{#                    遏制茅台酒价格过快上涨，多渠道供给，就不一定要买，租茅台酒也可以的，租售同权。开发共有产权茅台酒，让老百姓喝得起茅台酒，饮者有其酒。#}
-{#                </div>#}
-{#                <div class="comment_time fl">2017-01-01 00:00:00</div>#}
-{#                <a href="javascript:;" class="comment_up fr" data-comment-id="3">赞</a>#}
-{#                <a href="javascript:;" class="comment_reply fr">回复</a>#}
-{#                <from class="reply_form fl">#}
-{#                    <textarea class="reply_input"></textarea>#}
-{#                    <input type="submit" name="" value="回复" data-news-id="1" data-comment-id="3" class="reply_sub fr">#}
-{#                    <input type="reset" name="" value="取消" class="reply_cancel fr">#}
-{#                </from>#}
-{#            </div>#}
-{##}
-{#            <div class="comment_list">#}
-{#                <div class="person_pic fl">#}
-{#                    <img src="../../static/news/images/worm.jpg" alt="用户图标">#}
-{#                </div>#}
-{#                <div class="user_name fl">用户张山</div>#}
-{#                <div class="comment_text fl">#}
-{#                    遏制茅台酒价格过快上涨，多渠道供给，就不一定要买，租茅台酒也可以的，租售同权。开发共有产权茅台酒，让老百姓喝得起茅台酒，饮者有其酒。#}
-{#                </div>#}
-{#                <div class="comment_time fl">2017-01-01 00:00:00</div>#}
-{#                <a href="javascript:;" class="comment_up fr" data-comment-id="4">赞</a>#}
-{#                <a href="javascript:;" class="comment_reply fr">回复</a>#}
-{#                <from class="reply_form fl">#}
-{#                    <textarea class="reply_input"></textarea>#}
-{#                    <input type="submit" name="" value="回复" data-news-id="1" data-comment-id="4" class="reply_sub fr">#}
-{#                    <input type="reset" name="" value="取消" class="reply_cancel fr">#}
-{#                </from>#}
-{#            </div>#}
+            {#            <div class="comment_list">#}
+            {#                <div class="person_pic fl">#}
+            {#                    <img src="../../static/news/images/worm.jpg" alt="用户图标">#}
+            {#                </div>#}
+            {#                <div class="user_name fl">用户张山</div>#}
+            {#                <div class="comment_text fl">#}
+            {#                    遏制茅台酒价格过快上涨，多渠道供给，就不一定要买，租茅台酒也可以的，租售同权。开发共有产权茅台酒，让老百姓喝得起茅台酒，饮者有其酒。#}
+            {#                </div>#}
+            {#                <div class="reply_text_con fl">#}
+            {#                    <div class="user_name2">用户李思</div>#}
+            {#                    <div class="reply_text">#}
+            {#                        遏制茅台酒价格过快上涨，多渠道供给，就不一定要买，租茅台酒也可以的，租售同权。开发共有产权茅台酒，让老百姓喝得起茅台酒，饮者有其酒。#}
+            {#                    </div>#}
+            {#                </div>#}
+            {#                <div class="comment_time fl">2017-01-01 00:00:00</div>#}
+            {#                <a href="javascript:;" class="comment_up has_comment_up fr" data-comment-id="1">1</a>#}
+            {#                <a href="javascript:;" class="comment_reply fr">回复</a>#}
+            {#                <from class="reply_form fl">#}
+            {#                    <textarea class="reply_input"></textarea>#}
+            {#                    <input type="submit" name="" value="回复" data-news-id="1" data-comment-id="1" class="reply_sub fr">#}
+            {#                    <input type="reset" name="" value="取消" class="reply_cancel fr">#}
+            {#                </from>#}
+            {#            </div>#}
+            {##}
+            {#            <div class="comment_list">#}
+            {#                <div class="person_pic fl">#}
+            {#                    <img src="../../static/news/images/worm.jpg" alt="用户图标">#}
+            {#                </div>#}
+            {#                <div class="user_name fl">用户张山</div>#}
+            {#                <div class="comment_text fl">#}
+            {#                    遏制茅台酒价格过快上涨，多渠道供给，就不一定要买，租茅台酒也可以的，租售同权。开发共有产权茅台酒，让老百姓喝得起茅台酒，饮者有其酒。#}
+            {#                </div>#}
+            {#                <div class="comment_time fl">2017-01-01 00:00:00</div>#}
+            {#                <a href="javascript:;" class="comment_up fr" data-comment-id="2">赞</a>#}
+            {#                <a href="javascript:;" class="comment_reply fr">回复</a>#}
+            {#                <from class="reply_form fl">#}
+            {#                    <textarea class="reply_input"></textarea>#}
+            {#                    <input type="submit" name="" value="回复" data-news-id="1" data-comment-id="2" class="reply_sub fr">#}
+            {#                    <input type="reset" name="" value="取消" class="reply_cancel fr">#}
+            {#                </from>#}
+            {#            </div>#}
+            {##}
+            {#            <div class="comment_list">#}
+            {#                <div class="person_pic fl">#}
+            {#                    <img src="../../static/news/images/worm.jpg" alt="用户图标">#}
+            {#                </div>#}
+            {#                <div class="user_name fl">用户张山</div>#}
+            {#                <div class="comment_text fl">#}
+            {#                    遏制茅台酒价格过快上涨，多渠道供给，就不一定要买，租茅台酒也可以的，租售同权。开发共有产权茅台酒，让老百姓喝得起茅台酒，饮者有其酒。#}
+            {#                </div>#}
+            {#                <div class="comment_time fl">2017-01-01 00:00:00</div>#}
+            {#                <a href="javascript:;" class="comment_up fr" data-comment-id="3">赞</a>#}
+            {#                <a href="javascript:;" class="comment_reply fr">回复</a>#}
+            {#                <from class="reply_form fl">#}
+            {#                    <textarea class="reply_input"></textarea>#}
+            {#                    <input type="submit" name="" value="回复" data-news-id="1" data-comment-id="3" class="reply_sub fr">#}
+            {#                    <input type="reset" name="" value="取消" class="reply_cancel fr">#}
+            {#                </from>#}
+            {#            </div>#}
+            {##}
+            {#            <div class="comment_list">#}
+            {#                <div class="person_pic fl">#}
+            {#                    <img src="../../static/news/images/worm.jpg" alt="用户图标">#}
+            {#                </div>#}
+            {#                <div class="user_name fl">用户张山</div>#}
+            {#                <div class="comment_text fl">#}
+            {#                    遏制茅台酒价格过快上涨，多渠道供给，就不一定要买，租茅台酒也可以的，租售同权。开发共有产权茅台酒，让老百姓喝得起茅台酒，饮者有其酒。#}
+            {#                </div>#}
+            {#                <div class="comment_time fl">2017-01-01 00:00:00</div>#}
+            {#                <a href="javascript:;" class="comment_up fr" data-comment-id="4">赞</a>#}
+            {#                <a href="javascript:;" class="comment_reply fr">回复</a>#}
+            {#                <from class="reply_form fl">#}
+            {#                    <textarea class="reply_input"></textarea>#}
+            {#                    <input type="submit" name="" value="回复" data-news-id="1" data-comment-id="4" class="reply_sub fr">#}
+            {#                    <input type="reset" name="" value="取消" class="reply_cancel fr">#}
+            {#                </from>#}
+            {#            </div>#}
         </div>
     </div>
 {% endblock %}

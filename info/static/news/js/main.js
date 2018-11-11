@@ -272,7 +272,7 @@ $(function () {
             axios.post("/passport/logout", "", {headers: {'X-CSRFToken': vm.csrf_token}})
                 .then(function (response) {
                     //
-                    alert("成功退出系统");
+                    // alert("成功退出系统");
                     // 刷新页面
                     location.reload();
                 })
@@ -297,7 +297,7 @@ $(function () {
         // 右侧标签控件
         var rank_con = $(".rank_con")
         // 滚动不可超过 页面可以滚动的距离
-        if (nowScroll < canScrollHeight - 50) {
+        if (nowScroll < canScrollHeight - 100) {
             // 如果屏幕滚动遮住头部标签, 设置标签的margin-top
             if (nowScroll > header_height) {
                 // 设置外边界-top

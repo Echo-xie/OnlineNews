@@ -94,40 +94,46 @@ def page_not_found(_):
     return render_template('news/404.html', data=data)
     return app
 
-# 定义路由函数 -- 所有请求访问后 ( 前后端不分离, 无法实现 )
-# @app.after_request
-# def after_request(response):
-#     """
-#         请求访问后
-#     :param response: 响应
-#     :return: 响应
-#     """
-#     # 获取session中的用户ID
-#     user_id = session.get("user_id")
-#     # 用户对象
-#     user = ""
-#     try:
-#         # 根据用户ID查询数据
-#         from info.models import User
-#         user = User.query.get(user_id)
-#     except Exception as e:
-#         current_app.logger.error(e)
-#         # abort(404)
-#     # 如果用户对象获取成功
-#     if user:
-#         # 设置全局用户信息
-#         g.user = user
-#         # 用户信息 -- 字典封装
-#         user_info = user.to_dict()
-#         # 最后返回的数据
-#         real_data = {}
-#         # 如果已有返回数据
-#         if response.get_json():
-#             # 获取原有返回数据
-#             real_data = response.get_json()
-#         # 添加返回数据
-#         real_data['user_info'] = user_info
-#         # 重新封装response响应
-#         # response.data = json.dumps(real_data)
-#     # 返回
-#     return response
+# 定义路由函数 -- 所有请求访问后
+@app.after_request
+def after_request(response):
+    """
+        请求访问后
+    :param response: 响应
+    :return: 响应
+    """
+    # # 获取session中的用户ID
+    # user_id = session.get("user_id")
+    # # 用户对象
+    # user = ""
+    # try:
+    #     # 根据用户ID查询数据
+    #     from info.models import User
+    #     user = User.query.get(user_id)
+    # except Exception as e:
+    #     current_app.logger.error(e)
+    #     # abort(404)
+    # # 如果用户对象获取成功
+    # if user:
+    #     # 设置全局用户信息
+    #     g.user = user
+    #     # 用户信息 -- 字典封装
+    #     user_info = user.to_dict()
+    #     # 最后返回的数据
+    #     real_data = {}
+    #     # 如果已有返回数据
+    #     if response.get_json():
+    #         # 获取原有返回数据
+    #         real_data = response.get_json()
+    #     # 添加返回数据
+    #     real_data['user_info'] = user_info
+    #     # 重新封装response响应
+    #     response.data = json.dumps(real_data)
+    # ( 前后端不分离, 无法实现 )
+
+    # 使用flask_wtf库的方法生成 csrf_token
+    csrf_token = generate_csrf()
+    # 设置cookie
+    response.set_cookie("csrf_token", csrf_token)
+    # 返回
+    return response
