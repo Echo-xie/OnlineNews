@@ -28,6 +28,7 @@ def user_login_data(fn):
     :param fn: 装饰的函数
     :return:
     """
+
     @functools.wraps(fn)
     def wrapper(*args, **kwargs):
         """
@@ -38,12 +39,13 @@ def user_login_data(fn):
         """
         # 获取到当前登录用户的id
         user_id = session.get("user_id")
+        #
+        user = False
         # 通过id获取用户信息
-        user = None
         if user_id:
             from info.models import User
             user = User.query.get(user_id)
-
+        # 保存用户信息
         g.user = user
         return fn(*args, **kwargs)
 

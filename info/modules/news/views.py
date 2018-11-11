@@ -5,7 +5,7 @@ date: 18-11-10 下午9:30
 from flask import render_template, current_app, abort, g, request, jsonify
 
 from info import mysql_db, constants
-from info.models import News
+from info.models import News, User
 from info.response_code import RET
 from info.utils.common import user_login_data
 from . import news_blu
@@ -53,21 +53,31 @@ def detail(news_id):
         click_news_list.append(news.to_basic_dict())
     """新闻评论"""
     """作者信息"""
-    """是否收藏"""
+    """是否收藏/是否关注作者"""
     # 判断是否收藏该新闻，默认值为 false
     is_collected = False
+    # 当前登录用户是否关注当前新闻作者
+    is_followed = False
+    # 用户信息
+    user_info = None
     # 如果当前已登陆用户, 判断当前用户是否收藏此新闻
-    if hasattr(g, "user"):
+    if g.user:
+        # 用户信息
+        user_info = g.user.to_dict()
         # 如果当前新闻在用户收藏新闻列表中
         if news_detail in g.user.collection_news:
             # 设置为已收藏
             is_collected = True
+        # 如果当前用户关注作者
+        if news_detail.user.followers.filter(User.id == g.user.id).count() > 0:
+            is_followed = True
     # 返回数据
     data = {
         "news": news_detail,
         "click_news_list": click_news_list,
         "is_collected": is_collected,
-        "user_info": g.user.to_dict() if g.user else None,
+        "is_followed": is_followed,
+        "user_info": user_info,
     }
     return render_template("news/detail.html", data=data)
 
