@@ -5,14 +5,14 @@ date: 18-11-8 上午6:54
 import json
 import logging
 from logging.handlers import RotatingFileHandler
-from flask import Flask, session, current_app, g, make_response, jsonify
+from flask import Flask, session, current_app, g, make_response, jsonify, render_template
 from config import config
 from flask_sqlalchemy import SQLAlchemy
 import redis
 from flask_wtf.csrf import CSRFProtect, generate_csrf
 from flask_session import Session
 from info.constants import REDIS_POOL_SELECT_0
-from info.utils.common import do_index_class
+from info.utils.common import do_index_class, user_login_data
 
 # 实例化MySQL数据库
 mysql_db = SQLAlchemy()
@@ -85,6 +85,14 @@ def setup_log(config_name):
 # Flask实例app
 app = create_app("development")
 
+
+@app.errorhandler(404)
+@user_login_data
+def page_not_found(_):
+    user = g.user
+    data = {"user_info": user.to_dict() if user else None}
+    return render_template('news/404.html', data=data)
+    return app
 
 # 定义路由函数 -- 所有请求访问后 ( 前后端不分离, 无法实现 )
 # @app.after_request
