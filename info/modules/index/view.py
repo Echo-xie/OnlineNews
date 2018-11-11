@@ -2,37 +2,25 @@
     首页路由
 date: 18-11-8 下午8:24
 """
-from flask import render_template, current_app, session, request, jsonify
+from flask import render_template, current_app, session, request, jsonify, g
 from flask_wtf.csrf import generate_csrf
 
 from info import constants
 from info.models import User, News, Category
 from info.response_code import RET
+from info.utils.common import user_login_data
 from . import index_blu
 
 
 # 定义路由函数 -- 首页
 @index_blu.route("/")
 @index_blu.route("/index")
+@user_login_data
 def index():
     """
         路由函数
     :return:
     """
-    """获取用户信息"""
-    # 获取当前登陆用户ID
-    user_id = session.get("user_id")
-    # 用户信息
-    user_info = None
-    try:
-        # 通过user_id获取用户信息
-        user = User.query.filter(User.id == user_id).first()
-        if user:
-            # user信息封装字典
-            user_info = user.to_dict()
-    except Exception as e:
-        # 写日志
-        current_app.logger.error(e)
     """获取点击排行"""
     # 新闻信息列表
     news_list = []
@@ -60,7 +48,7 @@ def index():
 
     # 设置数据
     data = {
-        "user_info": user_info,
+        "user_info": g.user.to_dict() if g.user else None,
         "click_news_list": click_news_list,
         "categories": categories_dicts
     }

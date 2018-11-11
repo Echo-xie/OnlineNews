@@ -11,7 +11,7 @@
 {% block headerBlock %}
     <ul class="menu fl">
         {% for category in data.categories %}
-            <li class="{% if category.active %}active{% endif %}" data-cid="{{ category.id }}"><a href="javascript:;">{{ category.name }}</a></li>
+            <li class="{% if category.active or loop.index0 == 0 %}active{% endif %}" data-cid="{{ category.id }}"><a href="javascript:;">{{ category.name }}</a></li>
         {% endfor %}
     </ul>
 {% endblock %}

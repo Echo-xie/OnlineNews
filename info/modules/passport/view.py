@@ -8,7 +8,7 @@ import redis
 from info import redis_pool, REDIS_POOL_SELECT_0, mysql_db
 import random
 import re
-from flask import request, jsonify, make_response, current_app, session
+from flask import request, jsonify, make_response, current_app, session, g
 from info.utils.yuntongxun.sms import CCP
 from info.models import User
 from . import passport_blu
@@ -314,5 +314,8 @@ def logout():
     session.pop('nick_name', None)
     # 移除 mobile
     session.pop('mobile', None)
+    # 移除全局g对象中的user信息 -- 如果全局g对象有user属性
+    if g.user:
+        del g.user
     # 返回
     return jsonify(error=RET.OK, errmsg="ok")

@@ -2,6 +2,9 @@
     通用工具
 date: 18-11-10 下午8:21
 """
+import functools
+
+from flask import session, g
 
 
 def do_index_class(index):
@@ -17,3 +20,31 @@ def do_index_class(index):
         return "third"
     else:
         return ""
+
+
+def user_login_data(fn):
+    """
+        用户登陆装饰器
+    :param fn: 装饰的函数
+    :return:
+    """
+    @functools.wraps(fn)
+    def wrapper(*args, **kwargs):
+        """
+            装饰步骤
+        :param args:
+        :param kwargs:
+        :return:
+        """
+        # 获取到当前登录用户的id
+        user_id = session.get("user_id")
+        # 通过id获取用户信息
+        user = None
+        if user_id:
+            from info.models import User
+            user = User.query.get(user_id)
+
+        g.user = user
+        return fn(*args, **kwargs)
+
+    return wrapper

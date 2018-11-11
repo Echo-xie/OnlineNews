@@ -2,19 +2,19 @@
     此包, 用于存放具体业务逻辑的实现
 date: 18-11-8 上午6:54
 """
+import json
 import logging
 from logging.handlers import RotatingFileHandler
-from flask import Flask
+from flask import Flask, session, current_app, g, make_response, jsonify
 from config import config
 from flask_sqlalchemy import SQLAlchemy
 import redis
-from flask_wtf.csrf import CSRFProtect
+from flask_wtf.csrf import CSRFProtect, generate_csrf
 from flask_session import Session
 from info.constants import REDIS_POOL_SELECT_0
-
-# 实例化MySQL数据库
 from info.utils.common import do_index_class
 
+# 实例化MySQL数据库
 mysql_db = SQLAlchemy()
 # Redis连接池
 redis_pool = {}
@@ -80,3 +80,46 @@ def setup_log(config_name):
     file_log_handler.setFormatter(formatter)
     # 为全局日志工具对象设置日志处理器
     logging.getLogger().addHandler(file_log_handler)
+
+
+# Flask实例app
+app = create_app("development")
+
+
+# 定义路由函数 -- 所有请求访问后 ( 前后端不分离, 无法实现 )
+# @app.after_request
+# def after_request(response):
+#     """
+#         请求访问后
+#     :param response: 响应
+#     :return: 响应
+#     """
+#     # 获取session中的用户ID
+#     user_id = session.get("user_id")
+#     # 用户对象
+#     user = ""
+#     try:
+#         # 根据用户ID查询数据
+#         from info.models import User
+#         user = User.query.get(user_id)
+#     except Exception as e:
+#         current_app.logger.error(e)
+#         # abort(404)
+#     # 如果用户对象获取成功
+#     if user:
+#         # 设置全局用户信息
+#         g.user = user
+#         # 用户信息 -- 字典封装
+#         user_info = user.to_dict()
+#         # 最后返回的数据
+#         real_data = {}
+#         # 如果已有返回数据
+#         if response.get_json():
+#             # 获取原有返回数据
+#             real_data = response.get_json()
+#         # 添加返回数据
+#         real_data['user_info'] = user_info
+#         # 重新封装response响应
+#         # response.data = json.dumps(real_data)
+#     # 返回
+#     return response
