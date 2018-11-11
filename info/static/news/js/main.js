@@ -294,17 +294,26 @@ $(function () {
         var nowScroll = $(document).scrollTop();
         // 网页头部标签高度
         var header_height = $(".header").height()
-        // 获取右侧标签控件
+        // 右侧标签控件
         var rank_con = $(".rank_con")
-        // 如果屏幕滚动遮住头部标签, 设置标签的margin-top
-        if (nowScroll > header_height) {
-            // 设置外边界-top
-            rank_con.css("marginTop", nowScroll - header_height)
-        } else {
-            // 取消外边距, 恢复原本布局
-            rank_con.css("marginTop", 0)
+        // 滚动不可超过 页面可以滚动的距离
+        if (nowScroll < canScrollHeight - 50) {
+            // 如果屏幕滚动遮住头部标签, 设置标签的margin-top
+            if (nowScroll > header_height) {
+                // 设置外边界-top
+                rank_con.css("marginTop", nowScroll - header_height)
+            } else {
+                // 取消外边距, 恢复原本布局
+                rank_con.css("marginTop", 0)
+            }
         }
-    })
+        // 如果滚动条下滑到一定位置, 出现返回顶部
+        if (nowScroll > 600){
+            $("#to_top").show()
+        } else {
+            $("#to_top").hide()
+        }
+    });
 
 });
 // 图片uuid
