@@ -14,7 +14,6 @@ from . import index_blu
 
 # 定义路由函数 -- 首页
 @index_blu.route("/")
-@index_blu.route("/index")
 @user_login_data
 def index():
     """
@@ -35,7 +34,7 @@ def index():
     # 循环 -- 三目运算 判断 news_list 是否获取到数据
     for news in news_list if news_list else []:
         # 由于是懒加载, news_list是没有具体的值的, 只有调用获取news时, 才去数据库加载数据, 所有需要转换一次
-        click_news_list.append(news.to_basic_dict())
+        click_news_list.append(news.to_dict())
     """获取新闻分类"""
     # 获取所有新闻分类
     categories = Category.query.all()
@@ -101,7 +100,7 @@ def get_news_list():
     # 循环
     for news in items:
         # 封装新闻列表
-        news_li.append(news.to_basic_dict())
+        news_li.append(news.to_dict())
 
     # 返回数据
     return jsonify(errno=RET.OK, errmsg="OK", totalPage=total_page, currentPage=current_page, newsList=news_li, cid=category_id)

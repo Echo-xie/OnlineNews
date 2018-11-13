@@ -1,18 +1,22 @@
 $(function () {
+    // ES6 模板字符串
+    Vue.config.delimiters = ['{[', ']}']
+
+    // 修改文本插值的定界符。
+    Vue.config.unsafeDelimiters = ['{[', ']}']
+
+    // 修改原生 HTML 插值的定界符。
     // 实例化vue
     vm = new Vue({
         // 指定标签
         el: "#app",
         // 设置语法模板
-        delimiters: ["{[", "]}"],
+        // delimiters: ["{[", "]}"],
         // 属性字典
         data: {
             // 获取cookie中csrf_token -- CSRF防范
             csrf_token: getCookie("csrf_token"),
-            image_src: "../../static/news/images/pic_code.png",
-            image_uuid: 0,
             get_code_str: "60秒",
-            get_code_cli: true,
             user_info: $("#user_info").val(),
         },
         // 方法字典
@@ -297,7 +301,7 @@ $(function () {
         // 右侧标签控件
         var rank_con = $(".rank_con")
         // 滚动不可超过 页面可以滚动的距离
-        if (nowScroll < canScrollHeight - 100) {
+        if (nowScroll < canScrollHeight - 10) {
             // 如果屏幕滚动遮住头部标签, 设置标签的margin-top
             if (nowScroll > header_height) {
                 // 设置外边界-top
@@ -308,7 +312,7 @@ $(function () {
             }
         }
         // 如果滚动条下滑到一定位置, 出现返回顶部
-        if (nowScroll > 600){
+        if (nowScroll > 600) {
             $("#to_top").show()
         } else {
             $("#to_top").hide()
@@ -326,14 +330,14 @@ function generateImageCode() {
     // json请求地址
     var imageCodeUrl = "/passport/image_code?code_id=" + imageCodeId;
     // 设置 图形验证码 url
-    vm.image_src = imageCodeUrl;
-    // 设置 图形验证码 uuid
-    vm.image_uuid = imageCodeId;
+    $(".get_pic_code").attr("src", imageCodeUrl);
 
 }
 
 // 发送短信验证码
 function sendSMSCode() {
+    // 点击获取短信验证码标签
+    var get_code = $(".get_code")
     // 前端校验参数，保证输入框有数据填写
     var mobile = $("#register_mobile").val();
     $("#register-mobile-err").hide();
@@ -391,7 +395,8 @@ function sendSMSCode() {
                     generateImageCode()
                 } else {
                     // 设置不可点击, 并且倒计时开始
-                    vm.get_code_cli = false
+                    get_code.removeAttr("onclick")
+                    sendSMSCode
                     // 定时器 -- 1分钟只能请求一次短信验证码
                     var num = 60;
                     // 设置定时器
@@ -401,14 +406,14 @@ function sendSMSCode() {
                             // 取消计时器
                             clearInterval(t)
                             // 显示可点击
-                            vm.get_code_cli = true;
+                            get_code.attr("onclick", "sendSMSCode();");
                             // 初始化
-                            vm.get_code_str = "60秒";
+                            vget_code.html("点击获取验证码")
                         } else {
                             // 倒计时
                             num -= 1;
                             // 显示倒计时
-                            vm.get_code_str = num + "秒";
+                            get_code.html(num + "秒");
                         }
                     }, 1000);
                 }
@@ -455,4 +460,19 @@ function generateUUID() {
         return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
     });
     return uuid;
+}
+
+// 封装ajax请求
+function init_ajax(out_url, params, callback_success) {
+    $.ajax({
+        url: out_url,
+        type: "POST",
+        contentType: "application/json",
+        headers: {
+            "X-CSRFToken": getCookie("csrf_token")
+        },
+        data: JSON.stringify(params),
+        dataType: "json",
+        success: callback_success
+    });
 }

@@ -84,6 +84,10 @@ class User(BaseModel, db.Model):
 
     # 当前用户所发布的新闻 -- 关系 ( 新闻表, 反向引用--用户表, 懒加载 )
     news_list = db.relationship('News', backref='user', lazy='dynamic')
+    # 粉丝总数
+    followers_count = 0
+    # 新闻总数
+    news_count = 0
 
     # 装饰器 -- 读取
     @property
@@ -91,7 +95,7 @@ class User(BaseModel, db.Model):
         # 禁止读取
         raise AttributeError("当前属性不可读")
 
-    # 装饰器 -- 设置
+    # 装饰器 -- set
     @password.setter
     def password(self, value):
         """
@@ -110,6 +114,22 @@ class User(BaseModel, db.Model):
         """
         # 解密后, 对比密码是否正确
         return check_password_hash(self.password_hash, password)
+
+    # 装饰器 -- get
+    @property
+    def news_count(self):
+        count = 0
+        for _ in self.news_list:
+            count += 1
+        return count
+
+    # 装饰器 -- get
+    @property
+    def followers_count(self):
+        count = 0
+        for _ in self.followers:
+            count += 1
+        return count
 
     def to_dict(self):
         """
@@ -157,7 +177,7 @@ class News(BaseModel, db.Model):
     # 当前新闻的所有评论 -- 关系 ( 评论, 懒加载 )
     comments = db.relationship("Comment", lazy="dynamic")
 
-    def to_basic_dict(self):
+    def to_dict(self):
         """
             把对象数据转换为字典数据
         """
@@ -167,9 +187,15 @@ class News(BaseModel, db.Model):
             "title": self.title,
             "source": self.source,
             "digest": self.digest,
-            "create_time": self.create_time.strftime("%Y-%m-%d %H:%M:%S"),
-            "index_image_url": self.index_image_url,
+            "content": self.content,
             "clicks": self.clicks,
+            "comments_count": self.comments_count,
+            "index_image_url": self.index_image_url,
+            "category_id": self.category_id,
+            "status": self.status,
+            "reason": self.reason,
+            "create_time": self.create_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "user_id": self.user_id,
         }
         # 返回字典
         return resp_dict

@@ -47,6 +47,9 @@ def create_app(config_name):
     # 新闻蓝图
     from info.modules.news import news_blu
     app.register_blueprint(news_blu)
+    # 用户蓝图
+    from info.modules.users import users_blu
+    app.register_blueprint(users_blu)
     """数据库配置"""
     # 配置数据库 -- 根据app加载的配置信息
     mysql_db.init_app(app)
@@ -60,6 +63,78 @@ def create_app(config_name):
     CSRFProtect(app)
     # 设置session保存位置
     Session(app)
+
+    """定义app路由"""
+
+    @app.errorhandler(404)
+    @user_login_data
+    def page_not_found(_):
+        user = g.user
+        data = {"user_info": user.to_dict() if user else None}
+        return render_template('news/404.html', data=data)
+        return app
+
+    @app.before_request
+    def before_request():
+        """
+            每次请求访问执行前执行
+        :return:
+        """
+        # 获取到当前登录用户的id
+        user_id = session.get("user_id")
+        #
+        user = False
+        # 通过id获取用户信息
+        if user_id:
+            from info.models import User
+            user = User.query.get(user_id)
+        # 保存用户信息
+        g.user = user
+
+    # 定义路由函数 -- 所有请求访问后
+    @app.after_request
+    def after_request(response):
+        """
+            请求访问后
+        :param response: 响应
+        :return: 响应
+        """
+        # # 获取session中的用户ID
+        # user_id = session.get("user_id")
+        # # 用户对象
+        # user = ""
+        # try:
+        #     # 根据用户ID查询数据
+        #     from info.models import User
+        #     user = User.query.get(user_id)
+        # except Exception as e:
+        #     current_app.logger.error(e)
+        #     # abort(404)
+        # # 如果用户对象获取成功
+        # if user:
+        #     # 设置全局用户信息
+        #     g.user = user
+        #     # 用户信息 -- 字典封装
+        #     user_info = user.to_dict()
+        #     # 最后返回的数据
+        #     real_data = {}
+        #     # 如果已有返回数据
+        #     if response.get_json():
+        #         # 获取原有返回数据
+        #         real_data = response.get_json()
+        #     # 添加返回数据
+        #     real_data['user_info'] = user_info
+        #     # 重新封装response响应
+        #     response.data = json.dumps(real_data)
+        # ( 前后端不分离, 无法实现 )
+
+        # 使用flask_wtf库的方法生成 csrf_token
+        csrf_token = generate_csrf()
+        # 设置cookie
+        response.set_cookie("csrf_token", csrf_token)
+        # 返回
+        return response
+
     """返回"""
     return app
 
@@ -80,60 +155,3 @@ def setup_log(config_name):
     file_log_handler.setFormatter(formatter)
     # 为全局日志工具对象设置日志处理器
     logging.getLogger().addHandler(file_log_handler)
-
-
-# Flask实例app
-app = create_app("development")
-
-
-@app.errorhandler(404)
-@user_login_data
-def page_not_found(_):
-    user = g.user
-    data = {"user_info": user.to_dict() if user else None}
-    return render_template('news/404.html', data=data)
-    return app
-
-# 定义路由函数 -- 所有请求访问后
-@app.after_request
-def after_request(response):
-    """
-        请求访问后
-    :param response: 响应
-    :return: 响应
-    """
-    # # 获取session中的用户ID
-    # user_id = session.get("user_id")
-    # # 用户对象
-    # user = ""
-    # try:
-    #     # 根据用户ID查询数据
-    #     from info.models import User
-    #     user = User.query.get(user_id)
-    # except Exception as e:
-    #     current_app.logger.error(e)
-    #     # abort(404)
-    # # 如果用户对象获取成功
-    # if user:
-    #     # 设置全局用户信息
-    #     g.user = user
-    #     # 用户信息 -- 字典封装
-    #     user_info = user.to_dict()
-    #     # 最后返回的数据
-    #     real_data = {}
-    #     # 如果已有返回数据
-    #     if response.get_json():
-    #         # 获取原有返回数据
-    #         real_data = response.get_json()
-    #     # 添加返回数据
-    #     real_data['user_info'] = user_info
-    #     # 重新封装response响应
-    #     response.data = json.dumps(real_data)
-    # ( 前后端不分离, 无法实现 )
-
-    # 使用flask_wtf库的方法生成 csrf_token
-    csrf_token = generate_csrf()
-    # 设置cookie
-    response.set_cookie("csrf_token", csrf_token)
-    # 返回
-    return response

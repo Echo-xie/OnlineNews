@@ -8,6 +8,9 @@
 {% block contentBlock %}
     <div class="detail_con fl">
         <input type="hidden" id="news_id" value="{{ data.news.id }}">
+        <input type="hidden" id="author_id" value="{{ data.news.user.id }}">
+        <input type="hidden" id="is_collected" value="{{ data.is_collected }}">
+        <input type="hidden" id="is_followed" value="{{ data.is_followed }}">
         {% if data.user_info %}
             <input type="hidden" id="user_id" value="{{ data.user_info.id }}">
         {% endif %}
@@ -38,11 +41,8 @@
         {#        <p>#}
         {#            昨天晚间，中国平安公布2017年保费收入，全年该集团控股子公司平安财险、平安人寿、平安养老、平安健康原保险合同保费收入分别为2159.84亿元、3689.34亿元、175.6亿元及21.47亿元，合计约6046.26亿元人民币，同比增28.9%。除此以外，市场传出中国平安旗下的陆金所将于4月分拆于香港上市，估值达600亿美元。</p>#}
         {##}
-        {% if is_collected %}
-            <a href="javascript:;" class="collection block-center">收藏</a>
-        {% else %}
-            <a href="javascript:;" class="collected block-center"><span class="out">已收藏</span><span class="over">取消收藏</span></a>
-        {% endif %}
+        <a href="javascript:;" class="collection block-center">收藏</a>
+        <a href="javascript:;" class="collected block-center" style="display: none;"><span class="out">已收藏</span><span class="over">取消收藏</span></a>
 
         {% if not data.user_info %}
             <div class="comment_form_logout">
@@ -151,28 +151,30 @@
     </div>
 {% endblock %}
 {% block rank_contentBlock %}
-    {% if data.news.author %}
+    {% if data.news.user %}
         <div class="author_card">
-            <a href="#" class="author_pic"><img src="{% if data.news.author.avatar_url %}
-            {{ data.news.author.avatar_url }}
+            <a href="#" class="author_pic"><img src="{% if data.news.user.avatar_url %}
+            {{ data.news.user.avatar_url }}
             {% else %}
             ../../static/news/images/user_pic.png
             {% endif %}" alt="author_pic"></a>
-            <a href="#" class="author_name">{{ data.news.author.nick_name }}</a>
-            <div class="author_resume">签名：{{ data.news.author.signature }}</div>
-            <div class="writings"><span>总篇数</span><b>{{ data.news.author.news_count }}</b></div>
-            <div class="follows"><span>粉丝</span><b>{{ data.news.author.followers_count }}</b></div>
-            <a href="javascript:;" class="focus fr" data-userid="{{ data.news.author.id }}">关注</a>
-            <a href="javascript:;" class="focused fr" data-userid="{{ data.news.author.id }}"><span class="out">已关注</span><span class="over">取消关注</span></a>
+            <a href="#" class="author_name">{{ data.news.user.nick_name }}</a>
+            <div class="author_resume">签名：{{ data.news.user.signature }}</div>
+            <div class="writings"><span>总篇数</span><b>{{ data.news.user.news_count }}</b></div>
+            <div class="follows"><span>粉丝</span><b>{{ data.news.user.followers_count }}</b></div>
+            {% if data.user_info.id != data.news.user_id %}
+                <a href="javascript:;" class="focus fr">关注</a>
+                <a href="javascript:;" class="focused fr" style="display: none;"><span class="out">已关注</span><span class="over">取消关注</span></a>
+            {% endif %}
         </div>
     {% endif %}
-    <div class="author_card">
-        <a href="#" class="author_pic"><img src="../../static/news/images/user_pic.png" alt="author_pic"></a>
-        <a href="#" class="author_name">张大山</a>
-        <div class="author_resume">张大山的简介,张大山</div>
-        <div class="writings"><span>总篇数</span><b>23</b></div>
-        <div class="follows"><span>粉丝</span><b>36</b></div>
-        <a href="javascript:;" class="focus fr">关注</a>
-        <a href="javascript:;" class="focused fr"><span class="out">已关注</span><span class="over">取消关注</span></a>
-    </div>
+    {#    <div class="author_card">#}
+    {#        <a href="#" class="author_pic"><img src="../../static/news/images/user_pic.png" alt="author_pic"></a>#}
+    {#        <a href="#" class="author_name">张大山</a>#}
+    {#        <div class="author_resume">张大山的简介,张大山</div>#}
+    {#        <div class="writings"><span>总篇数</span><b>23</b></div>#}
+    {#        <div class="follows"><span>粉丝</span><b>36</b></div>#}
+    {#        <a href="javascript:;" class="focus fr">关注</a>#}
+    {#        <a href="javascript:;" class="focused fr"><span class="out">已关注</span><span class="over">取消关注</span></a>#}
+    {#    </div>#}
 {% endblock %}

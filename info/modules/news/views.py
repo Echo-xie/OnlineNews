@@ -21,16 +21,16 @@ def detail(news_id):
     """获取新闻详情"""
     try:
         # 根据ID获取数据
-        news_detail = News.query.get(news_id)
+        news_details = News.query.get(news_id)
     except Exception as e:
         current_app.logger.error(e)
         abort(404)
     # 如果新闻数据为空
-    if not news_detail:
+    if not news_details:
         # 404
         abort(404)
     # 新闻点击 +1
-    news_detail.clicks += 1
+    news_details.clicks += 1
     try:
         # 提交事务
         mysql_db.session.commit()
@@ -39,20 +39,19 @@ def detail(news_id):
 
     """右侧点击排行"""
     # 右侧新闻点击排行实体
-    news_list = None
+    right_news_list = None
     try:
         # 获取数据, 点击倒叙, 限制数量constants.CLICK_RANK_MAX_NEWS
-        news_list = News.query.order_by(News.clicks.desc()).limit(constants.CLICK_RANK_MAX_NEWS)
+        right_news_list = News.query.order_by(News.clicks.desc()).limit(constants.CLICK_RANK_MAX_NEWS)
     except Exception as e:
         current_app.logger.error(e)
     # 封装新闻列表
-    click_news_list = []
+    real_right_news = []
     # 循环获取新闻实体列表
-    for news in news_list if news_list else []:
+    for right_new in right_news_list if right_news_list else []:
         # 封装
-        click_news_list.append(news.to_basic_dict())
+        real_right_news.append(right_new.to_dict())
     """新闻评论"""
-    """作者信息"""
     """是否收藏/是否关注作者"""
     # 判断是否收藏该新闻，默认值为 false
     is_collected = False
@@ -65,16 +64,16 @@ def detail(news_id):
         # 用户信息
         user_info = g.user.to_dict()
         # 如果当前新闻在用户收藏新闻列表中
-        if news_detail in g.user.collection_news:
+        if news_details in g.user.collection_news:
             # 设置为已收藏
             is_collected = True
         # 如果当前用户关注作者
-        if news_detail.user.followers.filter(User.id == g.user.id).count() > 0:
+        if news_details.user.followers.filter(User.id == g.user.id).count() > 0:
             is_followed = True
     # 返回数据
     data = {
-        "news": news_detail,
-        "click_news_list": click_news_list,
+        "news": news_details,
+        "click_news_list": real_right_news,
         "is_collected": is_collected,
         "is_followed": is_followed,
         "user_info": user_info,
@@ -90,7 +89,7 @@ def news_collect():
     :return:
     """
     # 获取当前用户
-    user = g.user
+    user = User.query.get(g.user.id)
     # 获取参数
     dict_data = request.json
     # 获取新闻ID

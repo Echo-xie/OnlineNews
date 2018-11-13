@@ -5,8 +5,30 @@ function getCookie(name) {
 
 
 $(function () {
+    // 新闻ID
     var news_id = $("#news_id").val();
+    // 登陆用户ID
     var user_id = $("#user_id").val();
+    // 作者ID
+    var author_id = $("#author_id").val();
+    // 是否已收藏
+    var is_collected = $("#is_collected").val();
+    // 是否已关注
+    var is_followed = $("#is_followed").val();
+    // 如果已收藏
+    if (is_collected == "True") {
+        // 隐藏收藏按钮
+        $(".collection").hide();
+        // 显示取消收藏按钮
+        $(".collected").show();
+    }
+    // 如果已收藏
+    if (is_followed == "True") {
+        // 隐藏关注按钮
+        $(".focus").hide();
+        // 显示取消关注按钮
+        $(".focused").show();
+    }
 
     // 打开登录框
     $('.comment_form_logout').click(function () {
@@ -15,8 +37,11 @@ $(function () {
 
     // 收藏
     $(".collection").click(function () {
+        // 如果用户ID不存在, 需要先登陆
         if ($.isEmptyObject(user_id)) {
+            // 打开用户等窗口
             $('.login_form_con').show();
+            return;
         }
         // 获取收藏的`新闻id`
         var action = "collect";
@@ -28,29 +53,42 @@ $(function () {
         };
 
         // TODO 请求收藏新闻
-        $.ajax({
-            url: "/news/news_collect",
-            type: "POST",
-            contentType: "application/json",
-            headers: {
-                "X-CSRFToken": getCookie("csrf_token")
-            },
-            data: JSON.stringify(params),
-            dataType:"json",
-            success: function (response) {
-                let errno = response.errno;
-                let errmsg = response.errmsg;
-                if (errno == "0") {
-                    // 收藏成功
-                    // 隐藏收藏按钮
-                    $(".collection").hide();
-                    // 显示取消收藏按钮
-                    $(".collected").show();
-                } else {
-                    alert(resp.errmsg);
-                }
+        init_ajax("/news/news_collect", params, function (response) {
+            let errno = response.errno;
+            let errmsg = response.errmsg;
+            if (errno == 0) {
+                // 收藏成功
+                // 隐藏收藏按钮
+                $(".collection").hide();
+                // 显示取消收藏按钮
+                $(".collected").show();
+            } else {
+                alert(resp.errmsg);
             }
-        });
+        })
+        // $.ajax({
+        //     url: "/news/news_collect",
+        //     type: "POST",
+        //     contentType: "application/json",
+        //     headers: {
+        //         "X-CSRFToken": getCookie("csrf_token")
+        //     },
+        //     data: JSON.stringify(params),
+        //     dataType:"json",
+        //     success: function (response) {
+        //         let errno = response.errno;
+        //         let errmsg = response.errmsg;
+        //         if (errno == 0) {
+        //             // 收藏成功
+        //             // 隐藏收藏按钮
+        //             $(".collection").hide();
+        //             // 显示取消收藏按钮
+        //             $(".collected").show();
+        //         } else {
+        //             alert(resp.errmsg);
+        //         }
+        //     }
+        // });
 
     });
 
@@ -66,29 +104,42 @@ $(function () {
         };
 
         // TODO 请求取消收藏新闻
-        $.ajax({
-            url: "/news/news_collect",
-            type: "POST",
-            contentType: "application/json",
-            headers: {
-                "X-CSRFToken": getCookie("csrf_token")
-            },
-            data: JSON.stringify(params),
-            dataType:"json",
-            success: function (response) {
-                let errno = response.errno;
-                let errmsg = response.errmsg;
-                if (errno == "0") {
-                    // 收藏成功
-                    // 隐藏收藏按钮
-                    $(".collection").show();
-                    // 显示取消收藏按钮
-                    $(".collected").hide();
-                } else {
-                    alert(resp.errmsg);
-                }
+        init_ajax("/news/news_collect", params, function (response) {
+            let errno = response.errno;
+            let errmsg = response.errmsg;
+            if (errno == 0) {
+                // 收藏成功
+                // 隐藏收藏按钮
+                $(".collection").show();
+                // 显示取消收藏按钮
+                $(".collected").hide();
+            } else {
+                alert(resp.errmsg);
             }
-        });
+        })
+        // $.ajax({
+        //     url: "/news/news_collect",
+        //     type: "POST",
+        //     contentType: "application/json",
+        //     headers: {
+        //         "X-CSRFToken": getCookie("csrf_token")
+        //     },
+        //     data: JSON.stringify(params),
+        //     dataType: "json",
+        //     success: function (response) {
+        //         let errno = response.errno;
+        //         let errmsg = response.errmsg;
+        //         if (errno == 0) {
+        //             // 收藏成功
+        //             // 隐藏收藏按钮
+        //             $(".collection").show();
+        //             // 显示取消收藏按钮
+        //             $(".collected").hide();
+        //         } else {
+        //             alert(resp.errmsg);
+        //         }
+        //     }
+        // });
     });
 
     // 更新评论条数
@@ -179,11 +230,31 @@ $(function () {
 
     // 关注当前新闻作者
     $(".focus").click(function () {
-
+        // 如果用户ID不存在, 需要先登陆
+        if ($.isEmptyObject(user_id)) {
+            // 打开用户等窗口
+            $('.login_form_con').show();
+            return;
+        }
+        // 组织参数
+        var params = {
+            "followed_id": author_id,
+            "action": "follow",
+        };
+        init_ajax("/users/follow", params, function (response) {
+            location.reload();
+        })
     });
 
     // 取消关注当前新闻作者
     $(".focused").click(function () {
-
+        // 组织参数
+        var params = {
+            "followed_id": author_id,
+            "action": "un_follow",
+        };
+        init_ajax("/users/follow", params, function (response) {
+            location.reload();
+        })
     });
 });
