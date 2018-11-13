@@ -25,7 +25,7 @@ def follow():
     followed_id = data_dict.get("followed_id")
 
     # 判断参数数据是否都存在
-    if not ([action, followed_id]):
+    if not all([action, followed_id]):
         return jsonify(errno=RET.PARAMERR, errmsg="参数不齐")
 
     # 如果 actin不是这2个属性

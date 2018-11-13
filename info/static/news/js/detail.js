@@ -1,9 +1,3 @@
-function getCookie(name) {
-    var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
-    return r ? r[1] : undefined;
-}
-
-
 $(function () {
     // 新闻ID
     var news_id = $("#news_id").val();
@@ -38,9 +32,7 @@ $(function () {
     // 收藏
     $(".collection").click(function () {
         // 如果用户ID不存在, 需要先登陆
-        if ($.isEmptyObject(user_id)) {
-            // 打开用户等窗口
-            $('.login_form_con').show();
+        if (!check_login()) {
             return;
         }
         // 获取收藏的`新闻id`
@@ -150,6 +142,10 @@ $(function () {
 
     // 评论提交
     $(".comment_form").submit(function (e) {
+        // 如果用户ID不存在, 需要先登陆
+        if (!check_login()) {
+            return;
+        }
         // 组织表单默认提交行为
         e.preventDefault();
 
@@ -168,7 +164,10 @@ $(function () {
     });
 
     $('.comment_list_con').delegate('a,input', 'click', function () {
-
+        // 如果用户ID不存在, 需要先登陆
+        if (!check_login()) {
+            return;
+        }
         var sHandler = $(this).prop('class');
 
         if (sHandler.indexOf('comment_reply') >= 0) {
@@ -181,34 +180,63 @@ $(function () {
 
         if (sHandler.indexOf('comment_up') >= 0) {
             var $this = $(this);
-            // 默认点击时代表`点赞`
-            var action = 'do';
-            if (sHandler.indexOf('has_comment_up') >= 0) {
-                // 如果当前该评论已经是点赞状态，再次点击会进行到此代码块内，代表要取消点赞
-                $this.removeClass('has_comment_up');
-                // 如果已经点赞，设置为`取消点赞`
-                action = 'undo';
-            } else {
-                $this.addClass('has_comment_up')
-            }
 
             // 获取`评论id`
-            var comment_id = $this.attr('data-comment-id');
+            var comment_id = $this.attr('data-commentid');
 
             // 组织参数
             var params = {
                 "comment_id": comment_id,
-                "action": action
+                "news_id": news_id
             };
 
             // TODO 请求`点赞`或`取消点赞`
-
+            init_ajax("/news/comment_like", params, function (resp) {
+                // 请求成功
+                if (resp.errno == "0") {
+                    // 获取点赞数量
+                    var like_count = $this.attr('data-likecount')
+                    // 如果找不到
+                    if (like_count == undefined) {
+                        // 默认为0
+                        like_count = 0
+                    }
+                    // 如果已点赞
+                    if (sHandler.indexOf('has_comment_up') >= 0) {
+                        // 点赞次数-1
+                        like_count = parseInt(like_count) - 1
+                        // 修改点赞样式 -- 没有点赞
+                        $this.removeClass('has_comment_up');
+                        // 否则 没有点赞
+                    } else {
+                        // 点赞次数+1
+                        like_count = parseInt(like_count) + 1
+                        // 修改点赞样式 -- 已点赞
+                        $this.addClass('has_comment_up')
+                    }
+                    // 更新点赞数据
+                    $this.attr('data-likecount', like_count)
+                    // 如果点赞次数为0
+                    if (like_count == 0) {
+                        //
+                        $this.html("赞")
+                    } else {
+                        // 点赞次数
+                        $this.html(like_count)
+                    }
+                    // location.reload();
+                } else if (resp.errno == "4101") {
+                    $('.login_form_con').show();
+                } else {
+                    alert(resp.errmsg)
+                }
+            })
         }
 
         if (sHandler.indexOf('reply_sub') >= 0) {
             // 获取参数
             var $this = $(this);
-            var parent_id = $this.parent().attr('data-comment-id');
+            var parent_id = $this.parent().attr('data-commentid');
             var comment = $this.prev().val();
 
             if (!comment) {
@@ -224,6 +252,49 @@ $(function () {
             };
 
             // TODO 请求`回复评论`
+            init_ajax("/news/news_comment", params, function (resp) {
+                if (resp.errno == "0") {
+                    var comment = resp.data
+                    // 拼接内容
+                    var comment_html = ""
+                    comment_html += '<div class="comment_list">'
+                    comment_html += '<div class="person_pic fl">'
+                    if (comment.user.avatar_url) {
+                        comment_html += '<img src="' + comment.user.avatar_url + '" alt="用户图标">'
+                    } else {
+                        comment_html += '<img src="../../static/news/images/person01.png" alt="用户图标">'
+                    }
+                    comment_html += '</div>'
+                    comment_html += '<div class="user_name fl">' + comment.user.nick_name + '</div>'
+                    comment_html += '<div class="comment_text fl">'
+                    comment_html += comment.content
+                    comment_html += '</div>'
+                    comment_html += '<div class="reply_text_con fl">'
+                    comment_html += '<div class="user_name2">' + comment.parent.user.nick_name + '</div>'
+                    comment_html += '<div class="reply_text">'
+                    comment_html += comment.parent.content
+                    comment_html += '</div>'
+                    comment_html += '</div>'
+                    comment_html += '<div class="comment_time fl">' + comment.create_time + '</div>'
+
+                    comment_html += '<a href="javascript:;" class="comment_up fr" data-commentid="' + comment.id + '" data-newsid="' + comment.news_id + '">赞</a>'
+                    comment_html += '<a href="javascript:;" class="comment_reply fr">回复</a>'
+                    comment_html += '<form class="reply_form fl" data-commentid="' + comment.id + '">'
+                    comment_html += '<textarea class="reply_input"></textarea>'
+                    comment_html += '<input type="button" value="回复" class="reply_sub fr">'
+                    comment_html += '<input type="reset" name="" value="取消" class="reply_cancel fr">'
+                    comment_html += '</form>'
+
+                    comment_html += '</div>'
+                    $(".comment_list_con").prepend(comment_html)
+                    // 请空输入框
+                    $this.prev().val('')
+                    // 关闭
+                    $this.parent().hide()
+                } else {
+                    alert(resp.errmsg)
+                }
+            })
 
         }
     });
@@ -258,3 +329,73 @@ $(function () {
         })
     });
 });
+
+// 提交评论
+function submit_comment() {
+    var $this = $(this)
+    // 评论信息
+    var content = $(".comment_input").val()
+    // 评论信息ID
+    var parent_id = $this.parent().attr('data-commentid')
+    if (!content) {
+        alert('请输入评论内容');
+        return
+    }
+    // 请求体
+    params = {
+        "news_id": $("#news_id").val(),
+        "content": content,
+        "parent_id": parent_id
+    }
+    // ajax请求
+    init_ajax("/news/news_comment", params, function (resp) {
+        if (resp.errno == '0') {
+            var comment = resp.data
+            // 拼接内容
+            var comment_html = ''
+            comment_html += '<div class="comment_list">'
+            comment_html += '<div class="person_pic fl">'
+            if (comment.user.avatar_url) {
+                comment_html += '<img src="' + comment.user.avatar_url + '" alt="用户图标">'
+            } else {
+                comment_html += '<img src="../../static/news/images/person01.png" alt="用户图标">'
+            }
+            comment_html += '</div>'
+            comment_html += '<div class="user_name fl">' + comment.user.nick_name + '</div>'
+            comment_html += '<div class="comment_text fl">'
+            comment_html += comment.content
+            comment_html += '</div>'
+            comment_html += '<div class="comment_time fl">' + comment.create_time + '</div>'
+
+            comment_html += '<a href="javascript:;" class="comment_up fr" data-commentid="' + comment.id + '" data-newsid="' + comment.news_id + '">赞</a>'
+            comment_html += '<a href="javascript:;" class="comment_reply fr">回复</a>'
+            comment_html += '<form class="reply_form fl" data-commentid="' + comment.id + '" data-newsid="' + news_id + '">'
+            comment_html += '<textarea class="reply_input"></textarea>'
+            comment_html += '<input type="button" value="回复" class="reply_sub fr">'
+            comment_html += '<input type="reset" name="" value="取消" class="reply_cancel fr">'
+            comment_html += '</form>'
+
+            comment_html += '</div>'
+            // 拼接到内容的前面
+            $(".comment_list_con").prepend(comment_html)
+            // 让comment_sub 失去焦点
+            $('.comment_sub').blur();
+            // 清空输入框内容
+            $(".comment_input").val("")
+        } else {
+            alert(resp.errmsg)
+        }
+    })
+}
+
+// 查询是否登陆用户 -- true: 已登陆, false: 没有登陆
+function check_login() {
+    var user_id = $("#user_id").val();
+    // 如果用户ID不存在, 需要先登陆
+    if ($.isEmptyObject(user_id)) {
+        // 打开用户等窗口
+        $('.login_form_con').show();
+        return false;
+    }
+    return true;
+}

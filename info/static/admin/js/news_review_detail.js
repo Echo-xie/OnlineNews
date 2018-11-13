@@ -1,8 +1,3 @@
-function getCookie(name) {
-    var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
-    return r ? r[1] : undefined;
-}
-
 $(function(){
     $(".news_review").submit(function (e) {
         e.preventDefault();
