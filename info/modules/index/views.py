@@ -2,19 +2,16 @@
     首页路由
 date: 18-11-8 下午8:24
 """
-from flask import render_template, current_app, session, request, jsonify, g
-from flask_wtf.csrf import generate_csrf
-
+from flask import render_template, current_app, request, jsonify, g
 from info import constants
-from info.models import User, News, Category
+from info.models import News, Category
 from info.response_code import RET
-from info.utils.common import user_login_data
 from . import index_blu
 
 
 # 定义路由函数 -- 首页
 @index_blu.route("/")
-@user_login_data
+# @user_login_data
 def index():
     """
         路由函数

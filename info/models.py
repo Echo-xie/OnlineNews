@@ -84,10 +84,10 @@ class User(BaseModel, db.Model):
 
     # 当前用户所发布的新闻 -- 关系 ( 新闻表, 反向引用--用户表, 懒加载 )
     news_list = db.relationship('News', backref='user', lazy='dynamic')
-    # 粉丝总数
-    followers_count = 0
-    # 新闻总数
-    news_count = 0
+    # # 粉丝总数
+    # followers_count = 0
+    # # 新闻总数
+    # news_count = 0
 
     # 装饰器 -- 读取
     @property
@@ -114,22 +114,22 @@ class User(BaseModel, db.Model):
         """
         # 解密后, 对比密码是否正确
         return check_password_hash(self.password_hash, password)
-
-    # 装饰器 -- get
-    @property
-    def news_count(self):
-        count = 0
-        for _ in self.news_list:
-            count += 1
-        return count
-
-    # 装饰器 -- get
-    @property
-    def followers_count(self):
-        count = 0
-        for _ in self.followers:
-            count += 1
-        return count
+    #
+    # # 装饰器 -- get
+    # @property
+    # def news_count(self):
+    #     count = 0
+    #     for _ in self.news_list:
+    #         count += 1
+    #     return count
+    #
+    # # 装饰器 -- get
+    # @property
+    # def followers_count(self):
+    #     count = 0
+    #     for _ in self.followers:
+    #         count += 1
+    #     return count
 
     def to_dict(self):
         """

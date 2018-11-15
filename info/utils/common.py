@@ -39,10 +39,11 @@ def user_login_data(fn):
         """
         # 获取到当前登录用户的id
         user_id = session.get("user_id")
-        #
+        # 默认为False, 用于判断
         user = False
-        # 通过id获取用户信息
+        # 如果有用户ID
         if user_id:
+            # 通过id获取用户信息
             from info.models import User
             user = User.query.get(user_id)
         # 保存用户信息

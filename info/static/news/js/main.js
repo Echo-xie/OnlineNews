@@ -2,9 +2,6 @@ $(function () {
     // ES6 模板字符串
     Vue.config.delimiters = ['{[', ']}']
 
-    // 修改文本插值的定界符。
-    Vue.config.unsafeDelimiters = ['{[', ']}']
-
     // 修改原生 HTML 插值的定界符。
     // 实例化vue
     vm = new Vue({
@@ -443,6 +440,7 @@ function fnSetIframeHeight(num) {
     var $frame = $('#main_frame');
     $frame.css({'height': num});
 }
+
 // 获取cookie
 function getCookie(name) {
     var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
@@ -473,6 +471,12 @@ function init_ajax(out_url, params, callback_success) {
         },
         data: JSON.stringify(params),
         dataType: "json",
-        success: callback_success
+        success: function (resp) {
+            if (resp.errno == 4104) {
+                $('.login_form_con').show();
+                return false;
+            }
+            callback_success(resp)
+        }
     });
 }

@@ -4,14 +4,14 @@ date: 18-11-13 下午3:53
 """
 from flask import request, jsonify, g, current_app
 
-from info import mysql_db, user_login_data
+from info import mysql_db
 from info.models import User
 from info.response_code import RET
 from . import users_blu
 
 
 @users_blu.route("/follow", methods=['POST'])
-@user_login_data
+# @user_login_data
 def follow():
     """
         关注用户
@@ -39,10 +39,16 @@ def follow():
     # 判断具体操作 -- 关注/取消关注
     if action == "follow":
         # 关注
-        followed.followers.append(user)
+        # followers 是粉丝列表
+        # followed.followers.append(user)
+        # followed 是关注列表 -- 反向
+        user.followed.append(followed)
     else:
         # 取消关注
-        followed.followers.remove(user)
+        # followers 是粉丝列表
+        # followed.followers.remove(user)
+        # followed 是关注列表 -- 反向
+        user.followed.remove(followed)
     try:
         # 事务提交
         mysql_db.session.commit()

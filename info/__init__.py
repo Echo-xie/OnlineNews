@@ -2,17 +2,17 @@
     此包, 用于存放具体业务逻辑的实现
 date: 18-11-8 上午6:54
 """
-import json
 import logging
 from logging.handlers import RotatingFileHandler
-from flask import Flask, session, current_app, g, make_response, jsonify, render_template
+from flask import Flask, session, g, render_template, request, jsonify
 from config import config
 from flask_sqlalchemy import SQLAlchemy
 import redis
 from flask_wtf.csrf import CSRFProtect, generate_csrf
 from flask_session import Session
 from info.constants import REDIS_POOL_SELECT_0
-from info.utils.common import do_index_class, user_login_data
+from info.response_code import RET
+from info.utils.common import do_index_class
 
 # 实例化MySQL数据库
 mysql_db = SQLAlchemy()
@@ -67,27 +67,32 @@ def create_app(config_name):
     """定义app路由"""
 
     @app.errorhandler(404)
-    @user_login_data
+    # @user_login_data
     def page_not_found(_):
-        user = g.user
-        data = {"user_info": user.to_dict() if user else None}
+        data = {"user_info": g.user.to_dict() if g.user else None}
         return render_template('news/404.html', data=data)
-        return app
 
     @app.before_request
     def before_request():
         """
             每次请求访问执行前执行
+        -- 在此处做用户登陆验证不灵活, 因为并不是所有的视图都需要验证是否登陆用户
         :return:
         """
+        # 默认为False, 用于判断
+        user = False
         # 获取到当前登录用户的id
         user_id = session.get("user_id")
-        #
-        user = False
-        # 通过id获取用户信息
-        if user_id:
+        # 如果没有用户ID
+        if not user_id:
+            if chack_login(request.path):
+                return jsonify(errno=RET.USERERR, errmsg="请先登陆用户")
+        # 如果有用户ID
+        else:
+            # 通过id获取用户信息
             from info.models import User
             user = User.query.get(user_id)
+
         # 保存用户信息
         g.user = user
 
@@ -155,3 +160,21 @@ def setup_log(config_name):
     file_log_handler.setFormatter(formatter)
     # 为全局日志工具对象设置日志处理器
     logging.getLogger().addHandler(file_log_handler)
+
+
+def chack_login(path):
+    """
+        判断请求访问是否要验证用户登录
+    :param path: 请求访问路径
+    :return:
+    """
+    # 循环 登记需要验证用户登陆的请求访问路径
+    # for chack_path in constants.CHACK_LOGIN_PATH:
+    #     # 判断 当前请求访问路径是否包含在内
+    #     if chack_path.find(path):
+    #         # 需要用户登录验证
+    #         return True
+    if path in constants.CHACK_LOGIN_PATH:
+        return True
+    # 不需要用户登录验证
+    return False

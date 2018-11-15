@@ -33,3 +33,6 @@ ADMIN_NEWS_PAGE_MAX_COUNT = 10
 
 # Redis数据库选择
 REDIS_POOL_SELECT_0 = "pool_0"
+
+# 需要验证用户登陆的请求访问路径
+CHACK_LOGIN_PATH = ["/users/follow", "/news/news_comment", "/news/comment_like", "/news/news_collect"]

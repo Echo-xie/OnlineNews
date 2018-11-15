@@ -7,12 +7,11 @@ from flask import render_template, current_app, abort, g, request, jsonify
 from info import mysql_db, constants
 from info.models import News, User, Comment, CommentLike
 from info.response_code import RET
-from info.utils.common import user_login_data
 from . import news_blu
 
 
 @news_blu.route("/<int:news_id>")
-@user_login_data
+# @user_login_data
 def detail(news_id):
     """
         新闻详情
@@ -106,6 +105,9 @@ def detail(news_id):
         # 如果当前用户关注作者
         if news_details.user.followers.filter(User.id == g.user.id).count() > 0:
             is_followed = True
+    """作者总篇数, 粉丝数"""
+    news_count = news_details.user.news_list.count()
+    followers_count = news_details.user.followers.count()
     # 返回数据
     data = {
         "news": news_details,
@@ -114,12 +116,14 @@ def detail(news_id):
         "is_collected": is_collected,
         "is_followed": is_followed,
         "user_info": user_info,
+        "news_count": news_count,
+        "followers_count": followers_count,
     }
     return render_template("news/detail.html", data=data)
 
 
 @news_blu.route("/news_comment", methods=["POST"])
-@user_login_data
+# @user_login_data
 def news_comment():
     """
         发表评论
@@ -156,6 +160,8 @@ def news_comment():
     comment.news_id = news_id
     comment.content = content
     comment.parent_id = parent_id
+    # 添加新闻评论数量
+    news.comments_count += 1
 
     # 保存到数据库
     try:
@@ -170,7 +176,7 @@ def news_comment():
 
 
 @news_blu.route("/comment_like", methods=["POST"])
-@user_login_data
+# @user_login_data
 def comment_like():
     """
         点赞/取消点赞
@@ -185,10 +191,8 @@ def comment_like():
     dict_data = request.json
     # 获取评论ID
     comment_id = dict_data.get("comment_id")
-    # 新闻ID
-    news_id = dict_data.get("news_id")
     # 判断请求体参数是否都有数据
-    if not all([comment_id, news_id]):
+    if not all([comment_id]):
         return jsonify(errno=RET.PARAMERR, errmsg="参数不齐")
     try:
         # 查询评论详情
@@ -230,7 +234,7 @@ def comment_like():
 
 
 @news_blu.route("/news_collect", methods=['POST'])
-@user_login_data
+# @user_login_data
 def news_collect():
     """
         新闻收藏/取消收藏

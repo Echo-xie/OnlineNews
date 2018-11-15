@@ -187,7 +187,6 @@ $(function () {
             // 组织参数
             var params = {
                 "comment_id": comment_id,
-                "news_id": news_id
             };
 
             // TODO 请求`点赞`或`取消点赞`
@@ -225,8 +224,6 @@ $(function () {
                         $this.html(like_count)
                     }
                     // location.reload();
-                } else if (resp.errno == "4101") {
-                    $('.login_form_con').show();
                 } else {
                     alert(resp.errmsg)
                 }
