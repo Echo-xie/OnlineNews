@@ -51,3 +51,39 @@ def user_login_data(fn):
         return fn(*args, **kwargs)
 
     return wrapper
+
+
+import logging
+from qiniu import Auth, put_data
+
+# 需要填写你的 Access Key 和 Secret Key
+access_key = 'HgfrJJSt1pHNnTFFCbn3r-fMH2xNq0FOIKuPS4SR'
+secret_key = 'pP3R81Ojvkiad5q9P2AZF8a9CD_RjhnhySEkqeum'
+
+# 要上传的空间
+bucket_name = 'OnlineNews'
+
+
+def storage(data):
+    """
+        七牛云存储上传文件接口
+    :param data: 需要上传的二进制文件
+    :return: 文件路径
+    """
+    if not data:
+        return None
+    try:
+        # 构建鉴权对象
+        q = Auth(access_key, secret_key)
+        # 生成上传 Token
+        token = q.upload_token(bucket_name)
+        # 上传文件( Token, 文件名, 二进制文件 )
+        ret, info = put_data(token, None, data)
+    except Exception as e:
+        logging.error(e)
+        raise e
+    # 判断状态 和 状态码
+    if info and info.status_code != 200:
+        raise Exception("上传文件到七牛失败")
+    # 返回上传文件的网络路径
+    return ret["key"]

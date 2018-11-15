@@ -4,9 +4,10 @@ date: 18-11-13 下午3:53
 """
 from flask import request, jsonify, g, current_app, render_template, session
 
-from info import mysql_db
+from info import mysql_db, constants
 from info.models import User
 from info.response_code import RET
+from info.utils.common import storage
 from . import users_blu
 
 
@@ -72,6 +73,41 @@ def user_base_info():
     # 返回
     return jsonify(errno=RET.OK, errmsg="更新成功")
 
+
+@users_blu.route("/user_pic_info", methods=["GET", "POST"])
+def user_pic_info():
+    """
+        用户头像上传页面和功能
+    :return:
+    """
+    # 获取登陆用户
+    user = g.user
+    if request.method == "GET":
+        return users_render_template("users/user_pic_info.html")
+
+    try:
+        # 获取请求体 -- 二进制上传文件
+        avatar_file = request.files.get("avatar").read()
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.PARAMERR, errmsg="读取文件出错")
+
+    try:
+        # 上传文件
+        url = storage(avatar_file)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.THIRDERR, errmsg="上传图片错误")
+    # 保存用户头像路径
+    user.avatar_url = url
+    try:
+        # 事务提交
+        mysql_db.session.commit()
+    except Exception as e:
+        mysql_db.session.rollback()
+        return jsonify(errno=RET.DBERR, errmsg="保存用户数据错误")
+    # 返回
+    return jsonify(errno=RET.OK, errmsg="头像上传成功", avatar_url=constants.QINIU_DOMIN_PREFIX + url)
 
 @users_blu.route("/follow", methods=['POST'])
 # @user_login_data
