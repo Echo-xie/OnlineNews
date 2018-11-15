@@ -74,8 +74,8 @@ def get_news_list():
     except Exception as e:
         current_app.looger.error(e)
         return jsonify(errno=RET.PARAMERR, errmsg="参数类型错误")
-    # 条件
-    filters = []
+    # 条件 -- 默认为已审核
+    filters = [News.status == 0]
     # 如果分类id不为1，那么添加分类id的过滤
     if category_id != "1":
         # 添加条件
