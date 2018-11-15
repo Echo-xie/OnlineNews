@@ -7,6 +7,7 @@ from flask import render_template, current_app, abort, g, request, jsonify
 from info import mysql_db, constants
 from info.models import News, User, Comment, CommentLike
 from info.response_code import RET
+from info.utils.common import check_login
 from . import news_blu
 
 
@@ -123,6 +124,7 @@ def detail(news_id):
 
 
 @news_blu.route("/news_comment", methods=["POST"])
+@check_login
 # @user_login_data
 def news_comment():
     """
@@ -176,6 +178,7 @@ def news_comment():
 
 
 @news_blu.route("/comment_like", methods=["POST"])
+@check_login
 # @user_login_data
 def comment_like():
     """
@@ -234,6 +237,7 @@ def comment_like():
 
 
 @news_blu.route("/news_collect", methods=['POST'])
+@check_login
 # @user_login_data
 def news_collect():
     """

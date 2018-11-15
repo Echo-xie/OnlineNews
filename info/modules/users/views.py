@@ -7,11 +7,12 @@ from flask import request, jsonify, g, current_app, render_template, session
 from info import mysql_db, constants
 from info.models import User
 from info.response_code import RET
-from info.utils.common import storage
+from info.utils.common import storage, check_login
 from . import users_blu
 
 
 @users_blu.route("/info")
+@check_login
 def info():
     """
         用户信息
@@ -26,6 +27,7 @@ def info():
 
 
 @users_blu.route("/user_base_info", methods=["POST", "GET"])
+@check_login
 def user_base_info():
     """
         修改个人基本信息
@@ -75,6 +77,7 @@ def user_base_info():
 
 
 @users_blu.route("/user_pic_info", methods=["GET", "POST"])
+@check_login
 def user_pic_info():
     """
         用户头像上传页面和功能
@@ -109,7 +112,9 @@ def user_pic_info():
     # 返回
     return jsonify(errno=RET.OK, errmsg="头像上传成功", avatar_url=constants.QINIU_DOMIN_PREFIX + url)
 
+
 @users_blu.route("/follow", methods=['POST'])
+@check_login
 # @user_login_data
 def follow():
     """
@@ -161,7 +166,59 @@ def follow():
     return jsonify(errno=RET.OK, errmsg="操作成功")
 
 
+@users_blu.route("/user_collection")
+@check_login
+def user_collection():
+    """
+        用户收藏新闻列表
+    :return:
+    """
+    # 获取登陆用户
+    user = g.user
+    # 获取请求体
+    page = request.args.get("page", 1)
+    try:
+        # 转类型
+        page = int(page)
+    except Exception as e:
+        current_app.logger.error(e)
+        # 默认1
+        page = 1
+    # 收藏新闻集合实体
+    collections = []
+    # 当前页码
+    current_page = 1
+    # 总页数
+    total_page = 1
+    try:
+        # 在用户收藏新闻表中查询数据( 当前页码, 分页数量, 不查询 )
+        paginate = user.collection_news.paginate(page, constants.USER_COLLECTION_MAX_NEWS, False)
+        # 获取具体收藏新闻数据
+        collections = paginate.items
+        # 获取当前页码
+        current_page = paginate.page
+        # 获取总页数
+        total_page = paginate.pages
+    except Exception as e:
+        current_app.logger.error(e)
+    # 封装返回收藏新闻集合
+    collection_list = []
+    # 循环收藏新闻集合实体
+    for news in collections:
+        # 封装
+        collection_list.append(news.to_dict())
+    # 返回数据
+    data = {
+        "total_page": total_page,
+        "current_page": current_page,
+        "collections": collection_list
+    }
+    # 返回
+    return render_template("users/user_collection.html", data=data)
+
+
 @users_blu.route("/user_pass_info", methods=["GET", "POST"])
+@check_login
 def user_pass_info():
     """
         密码修改展示, 和修改密码

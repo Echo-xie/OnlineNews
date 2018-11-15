@@ -79,19 +79,19 @@ def create_app(config_name):
         -- 在此处做用户登陆验证不灵活, 因为并不是所有的视图都需要验证是否登陆用户
         :return:
         """
-        # 默认为False, 用于判断
-        user = False
         # 获取到当前登录用户的id
         user_id = session.get("user_id")
-        # 如果没有用户ID
-        if not user_id:
-            if chack_login(request.path):
-                return jsonify(errno=RET.USERERR, errmsg="请先登陆用户")
+        # 默认为False, 用于判断
+        user = False
         # 如果有用户ID
-        else:
+        if user_id:
             # 通过id获取用户信息
             from info.models import User
             user = User.query.get(user_id)
+        # # 如果没有用户ID
+        # else:
+        #     if chack_login(request.path):
+        #         return jsonify(errno=RET.USERERR, errmsg="请先登陆用户")
 
         # 保存用户信息
         g.user = user

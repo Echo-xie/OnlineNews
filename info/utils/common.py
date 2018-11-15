@@ -4,7 +4,9 @@ date: 18-11-10 下午8:21
 """
 import functools
 
-from flask import session, g
+from flask import session, g, jsonify, request
+
+from info import RET
 
 
 def do_index_class(index):
@@ -48,6 +50,33 @@ def user_login_data(fn):
             user = User.query.get(user_id)
         # 保存用户信息
         g.user = user
+        return fn(*args, **kwargs)
+
+    return wrapper
+
+
+def check_login(fn):
+    """
+        检测用户是否登陆
+    :param fn:
+    :return:
+    """
+
+    @functools.wraps(fn)
+    def wrapper(*args, **kwargs):
+        """
+            装饰步骤
+        :param args:
+        :param kwargs:
+        :return:
+        """
+        # 获取到当前登录用户的id
+        user_id = session.get("user_id")
+        # 默认为False, 用于判断
+        user = False
+        # 如果没有用户ID 以及 请求方式为POST
+        if not user_id and request.method == "POST":
+            return jsonify(errno=RET.USERERR, errmsg="请先登陆用户")
         return fn(*args, **kwargs)
 
     return wrapper
