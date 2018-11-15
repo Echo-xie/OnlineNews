@@ -93,11 +93,11 @@ def detail(news_id):
     # 当前登录用户是否关注当前新闻作者
     is_followed = False
     # 用户信息
-    user_info = None
+    user = None
     # 如果当前已登陆用户, 判断当前用户是否收藏此新闻
     if g.user:
         # 用户信息
-        user_info = g.user.to_dict()
+        user = g.user.to_dict()
         # 如果当前新闻在用户收藏新闻列表中
         if news_details in g.user.collection_news:
             # 设置为已收藏
@@ -115,7 +115,7 @@ def detail(news_id):
         "comment_list": comment_list,
         "is_collected": is_collected,
         "is_followed": is_followed,
-        "user_info": user_info,
+        "user": user,
         "news_count": news_count,
         "followers_count": followers_count,
     }

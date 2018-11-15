@@ -21,9 +21,44 @@ $(function () {
             "nick_name": nick_name,
             "gender": gender
         };
-        
-        // TODO 请求修改用户基本信息
 
+        // TODO 请求修改用户基本信息
+        init_ajax("/users/user_base_info", params, function (resp) {
+            if (resp.errno == "0") {
+                // 更新父窗口内容 parent.document
+                $('.user_center_name', parent.document).html(params['nick_name'])
+                $('#nick_name', parent.document).html(params['nick_name'])
+                alert("更新成功!")
+            } else {
+                alert(resp.errmsg)
+            }
+        })
 
     })
 });
+
+// 获取cookie
+function getCookie(name) {
+    var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
+    return r ? r[1] : undefined;
+}
+// 封装ajax请求
+function init_ajax(out_url, params, callback_success) {
+    $.ajax({
+        url: out_url,
+        type: "POST",
+        contentType: "application/json",
+        headers: {
+            "X-CSRFToken": getCookie("csrf_token")
+        },
+        data: JSON.stringify(params),
+        dataType: "json",
+        success: function (resp) {
+            if (resp.errno == 4104) {
+                $('.login_form_con').show();
+                return false;
+            }
+            callback_success(resp)
+        }
+    });
+}

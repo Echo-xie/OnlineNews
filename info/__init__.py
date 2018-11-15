@@ -69,7 +69,7 @@ def create_app(config_name):
     @app.errorhandler(404)
     # @user_login_data
     def page_not_found(_):
-        data = {"user_info": g.user.to_dict() if g.user else None}
+        data = {"user": g.user.to_dict() if g.user else None}
         return render_template('news/404.html', data=data)
 
     @app.before_request
@@ -120,7 +120,7 @@ def create_app(config_name):
         #     # 设置全局用户信息
         #     g.user = user
         #     # 用户信息 -- 字典封装
-        #     user_info = user.to_dict()
+        #     user = user.to_dict()
         #     # 最后返回的数据
         #     real_data = {}
         #     # 如果已有返回数据
@@ -128,7 +128,7 @@ def create_app(config_name):
         #         # 获取原有返回数据
         #         real_data = response.get_json()
         #     # 添加返回数据
-        #     real_data['user_info'] = user_info
+        #     real_data['user'] = user
         #     # 重新封装response响应
         #     response.data = json.dumps(real_data)
         # ( 前后端不分离, 无法实现 )

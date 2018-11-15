@@ -13,7 +13,7 @@
 </head>
 <body>
 <div id="app">
-    <input type="hidden" id="user_info" value="{{ data.user_info }}">
+    <input type="hidden" id="user" value="{{ data.user }}">
     <div class="header_con">
         <div class="header">
             <a href="#" class="logo fl"><img src="../images/logo.png" alt="logo"></a>
@@ -33,7 +33,7 @@
             <!-- 用户登录后显示下面，隐藏上面 -->
             <div class="user_login fr" v-if="is_login">
                 <img src="../images/person01.png" class="lgin_pic">
-                <a href="user.html" id="nick_name">{{ data.user_info.nick_name }}</a>
+                <a href="user.html" id="nick_name">{{ data.user.nick_name }}</a>
                 <a href="javascript:;" id="logout">退出</a>
             </div>
             <div class="user_btns fr" v-else>

@@ -44,7 +44,7 @@ def index():
 
     # 设置数据
     data = {
-        "user_info": g.user.to_dict() if g.user else None,
+        "user": g.user.to_dict() if g.user else None,
         "click_news_list": click_news_list,
         "categories": categories_dicts
     }

@@ -26,11 +26,11 @@
         {% endblock %}
 
         {# 判断用户是否登录 #}
-        {% if data.user_info %}
+        {% if data.user %}
             {# 如果登录，则显示用户信息 #}
             <div class="user_login fr">
-                <img src="{% if data.user_info.avatar_url %} {{ data.user_info.avatar_url }} {% else %}../../static/news/images/person01.png{% endif %}" class="lgin_pic">
-                <a href="#">{{ data.user_info.nick_name }}</a>
+                <img src="{% if data.user.avatar_url %} {{ data.user.avatar_url }} {% else %}../../static/news/images/person01.png{% endif %}" class="lgin_pic">
+                <a href="/users/info" id="nick_name">{{ data.user.nick_name }}</a>
                 <a href="#" id="logout">退出</a>
             </div>
         {% else %}

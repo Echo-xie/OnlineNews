@@ -14,7 +14,7 @@ $(function () {
             // 获取cookie中csrf_token -- CSRF防范
             csrf_token: getCookie("csrf_token"),
             get_code_str: "60秒",
-            user_info: $("#user_info").val(),
+            user: $("#user").val(),
         },
         // 方法字典
         methods: {
@@ -37,7 +37,7 @@ $(function () {
         // 计算器
         computed: {
             is_login: function () {
-                return true ? (this.user_info && this.user_info != "None") : false
+                return true ? (this.user && this.user != "None") : false
             }
         },
     });
