@@ -20,11 +20,15 @@
     <div id="pagination" class="page"></div>
     <script>
         $(function () {
+            {#jq分页插件 pagination#}
             $("#pagination").pagination({
+                {#当前页码#}
                 currentPage: {{ data.current_page }},
+                {#总页数#}
                 totalPage: {{ data.total_page }},
+                {#点击回调函数 current 页码#}
                 callback: function (current) {
-                    window.location.href = "/user/collection?p=" + current
+                    window.location.href = "/users/user_collection?page=" + current
                 }
             });
         });
