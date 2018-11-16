@@ -70,8 +70,8 @@ function init_ajax(out_url, params, callback_success) {
         data: JSON.stringify(params),
         dataType: "json",
         success: function (resp) {
-            if (resp.errno == 4104) {
-                $('.login_form_con').show();
+            if (resp.errno == 4101) {
+                $('.login_form_con', parent.document).show();
                 return false;
             }
             callback_success(resp)

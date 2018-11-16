@@ -102,7 +102,7 @@ def user_pic_info():
         current_app.logger.error(e)
         return jsonify(errno=RET.THIRDERR, errmsg="上传图片错误")
     # 保存用户头像路径
-    user.avatar_url = url
+    user.avatar_url = constants.QINIU_DOMIN_PREFIX + url
     try:
         # 事务提交
         mysql_db.session.commit()
@@ -122,9 +122,45 @@ def user_follow():
     """
     # 获取登陆用户
     user = g.user
-    # 请求方式 == get
-    if request.method == "GET":
-        return render_template("users/user_follow.html")
+    # 获取当前页码
+    page = request.args.get("page", 1)
+    # 页码
+    current_page = 1
+    # 总页数
+    total_page = 1
+    # 用户关注列表实体
+    user_followed_entity = []
+    try:
+        # 转类型
+        page = int(page)
+    except Exception as e:
+        current_app.logger.error(e)
+        page = 1
+    try:
+        # 分页查询当前用户关注用户列表
+        paginate = user.followed.paginate(page, constants.USER_FOLLOWED_MAX_COUNT, False)
+        # 获取用户关注列表数据
+        user_followed_entity = paginate.items
+        # 当前页码
+        current_page = paginate.page
+        # 总页数
+        total_page = paginate.pages
+    except Exception as e:
+        current_app.logger.error(e)
+    # 封装返回用户关注列表
+    user_follow_list = []
+    # 循环实体, 封装
+    for user in user_followed_entity:
+        # 封装
+        user_follow_list.append(user)
+    # 返回数据
+    data = {
+        "follows": user_follow_list,
+        "current_page": current_page,
+        "total_page": total_page
+    }
+    # 返回
+    return render_template('users/user_follow.html', data=data)
 
 
 @users_blu.route("/follow", methods=['POST'])
@@ -314,29 +350,31 @@ def user_news_release():
     # 分类ID
     category_id = request.form.get("category_id")
     # 判断参数是否都有数据
-    if not all([title, source, digest, content, index_image, category_id]):
+    if not all([title, source, digest, content, category_id]):
         return jsonify(errno=RET.PARAMERR, errmsg="参数不齐")
     try:
         # 读取图片二进制数据
         index_image = index_image.read()
     except Exception as e:
         current_app.logger.error(e)
-        return jsonify(errno=RET.PARAMERR, errmsg="图片读取失败")
-    try:
-        # 上传图片信息
-        url = storage(index_image)
-    except Exception as e:
-        current_app.logger.error(e)
-        return jsonify(errno=RET.THIRDERR, errmsg="上传图片错误")
+        # return jsonify(errno=RET.PARAMERR, errmsg="图片读取失败")
     # 实例化保存发布新闻数据
     news = News()
+    if index_image:
+        try:
+            # 上传图片信息
+            url = storage(index_image)
+            news.index_image_url = constants.QINIU_DOMIN_PREFIX + url
+        except Exception as e:
+            current_app.logger.error(e)
+            return jsonify(errno=RET.THIRDERR, errmsg="上传图片错误")
+    # 设置新闻实体属性
     news.title = title
     news.digest = digest
     news.source = source
     news.content = content
-    news.index_image_url = constants.QINIU_DOMIN_PREFIX + url
     news.category_id = category_id
-    news.user_id = g.user.id
+    news.user_id = user.id
     # 1代表待审核状态
     news.status = 1
     try:

@@ -134,12 +134,6 @@ $(function () {
         // });
     });
 
-    // 更新评论条数
-    function updateCommentCount() {
-        var length = $(".comment_list").length;
-        $(".comment_count").html(length + "条评论");
-    }
-
     // 评论提交
     $(".comment_form").submit(function (e) {
         // 如果用户ID不存在, 需要先登陆
@@ -283,11 +277,13 @@ $(function () {
                     comment_html += '</form>'
 
                     comment_html += '</div>'
-                    $(".comment_list_con").prepend(comment_html)
+                    $(".comment_list_con").prepend(comment_html);
                     // 请空输入框
-                    $this.prev().val('')
+                    $this.prev().val('');
                     // 关闭
-                    $this.parent().hide()
+                    $this.parent().hide();
+                    // 跟新评论数
+                    updateCommentCount();
                 } else {
                     alert(resp.errmsg)
                 }
@@ -331,9 +327,9 @@ $(function () {
 function submit_comment() {
     var $this = $(this)
     // 评论信息
-    var content = $(".comment_input").val()
+    var content = $(".comment_input").val();
     // 评论信息ID
-    var parent_id = $this.parent().attr('data-commentid')
+    var parent_id = $this.parent().attr('data-commentid');
     if (!content) {
         alert('请输入评论内容');
         return
@@ -378,7 +374,9 @@ function submit_comment() {
             // 让comment_sub 失去焦点
             $('.comment_sub').blur();
             // 清空输入框内容
-            $(".comment_input").val("")
+            $(".comment_input").val("");
+            // 跟新评论数
+            updateCommentCount();
         } else {
             alert(resp.errmsg)
         }
@@ -395,4 +393,10 @@ function check_login() {
         return false;
     }
     return true;
+}
+
+// 更新评论条数
+function updateCommentCount() {
+    var length = $(".comment_list").length;
+    $(".comment_count").html(length + "条评论");
 }

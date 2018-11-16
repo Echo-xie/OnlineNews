@@ -71,7 +71,7 @@ def detail(news_id):
                 comment_likes = CommentLike.query.filter(CommentLike.comment_id.in_(comment_ids),
                                                          CommentLike.user_id == g.user.id).all()
                 # 取出数据中所有的评论ID
-                comment_like_ids = [comment_like.comment_id for comment_like in comment_likes]
+                comment_like_ids = [_.comment_id for _ in comment_likes]
         except Exception as e:
             current_app.logger.error(e)
     # 封装后的新闻评论列表
@@ -107,8 +107,15 @@ def detail(news_id):
         if news_details.user.followers.filter(User.id == g.user.id).count() > 0:
             is_followed = True
     """作者总篇数, 粉丝数"""
-    news_count = news_details.user.news_list.count()
-    followers_count = news_details.user.followers.count()
+    # 默认0
+    news_count = 0
+    followers_count = 0
+    # 是否有作者
+    if news_details.user:
+        # 新闻总篇数
+        news_count = news_details.user.news_list.count()
+        # 作者粉丝数
+        followers_count = news_details.user.followers.count()
     # 返回数据
     data = {
         "news": news_details,

@@ -76,7 +76,7 @@ def check_login(fn):
         user = False
         # 如果没有用户ID 以及 请求方式为POST
         if not user_id and request.method == "POST":
-            return jsonify(errno=RET.USERERR, errmsg="请先登陆用户")
+            return jsonify(errno=RET.SESSIONERR, errmsg="请先登陆用户")
         return fn(*args, **kwargs)
 
     return wrapper
@@ -88,9 +88,8 @@ from qiniu import Auth, put_data
 # 需要填写你的 Access Key 和 Secret Key
 access_key = 'HgfrJJSt1pHNnTFFCbn3r-fMH2xNq0FOIKuPS4SR'
 secret_key = 'pP3R81Ojvkiad5q9P2AZF8a9CD_RjhnhySEkqeum'
-
 # 要上传的空间
-bucket_name = 'OnlineNews'
+bucket_name = 'onlinenews'
 
 
 def storage(data):
