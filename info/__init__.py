@@ -94,7 +94,7 @@ def create_app(config_name):
             # 如果有此用户信息
             if user:
                 # 保存用户信息
-                g.user = user.to_dict()
+                g.user = user
         # # 如果没有用户ID
         # else:
         #     if chack_login(request.path):

@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 
 from flask import request, render_template, current_app, session, redirect, url_for, g
 
+from info import constants
 from info.models import User
 from . import admin_blu
 
@@ -150,7 +151,7 @@ def user_count():
     active_date.reverse()
     # 翻转列表
     active_count.reverse()
-
+    # 封装返回数据
     data = {
         "total_count": total_count,
         "mon_count": mon_count,
@@ -160,3 +161,51 @@ def user_count():
     }
 
     return render_template('admin/user_count.html', data=data)
+
+
+@admin_blu.route("/user_list")
+def user_list():
+    """
+        用户列表
+    :return:
+    """
+    # 封装返回用户列表
+    user_list = []
+    # 实体用户列表
+    user_enitiy_list = []
+    # 获取请求体 -- 页码
+    page = request.args.get("page", 1)
+    # 当前页码
+    current_page = 1
+    # 总页数
+    total_page = 1
+
+    try:
+        # 转类型
+        page = int(page)
+    except Exception as e:
+        current_app.logger.error(e)
+        page = 1
+    try:
+        # 分页查询( 非管理员, 最后登陆倒序)
+        paginate = User.query.filter(User.is_admin == False).order_by(User.last_login.desc()).paginate(page, constants.ADMIN_USER_PAGE_MAX_COUNT, False)
+        # 当前页码查询数据
+        user_enitiy_list = paginate.items
+        # 当前页码
+        current_page = paginate.page
+        # 总页数
+        total_page = paginate.pages
+    except Exception as e:
+        current_app.logger.error(e)
+    # 循环实体用户列表
+    for user in user_enitiy_list:
+        # 封装
+        user_list.append(user.to_dict())
+    # 封装返回数据
+    data = {
+        "user_list": user_list,
+        "current_page": current_page,
+        "total_page": total_page
+    }
+
+    return render_template('admin/user_list.html', data=data)
