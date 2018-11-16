@@ -244,8 +244,6 @@ def register():
     session["user_id"] = user.id
     # 用户昵称
     session["nick_name"] = user.nick_name
-    # 用户手机
-    session["mobile"] = user.mobile
     """6. 返回注册的结果"""
     return jsonify(errno=RET.OK, errmsg="新用户注册成功")
 
@@ -313,8 +311,6 @@ def logout():
     session.pop('user_id', None)
     # 移除 nick_name
     session.pop('nick_name', None)
-    # 移除 mobile
-    session.pop('mobile', None)
     # 移除全局g对象中的user信息 -- 如果全局g对象有user属性
     g.user = False
     # 返回

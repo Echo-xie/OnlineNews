@@ -4,7 +4,7 @@ date: 18-11-8 上午6:54
 """
 import logging
 from logging.handlers import RotatingFileHandler
-from flask import Flask, session, g, render_template, request, jsonify
+from flask import Flask, session, g, render_template
 from config import config
 from flask_sqlalchemy import SQLAlchemy
 import redis
@@ -50,6 +50,9 @@ def create_app(config_name):
     # 用户蓝图
     from info.modules.users import users_blu
     app.register_blueprint(users_blu)
+    # 后台运维管理蓝图
+    from info.modules.admin import admin_blu
+    app.register_blueprint(admin_blu)
     """数据库配置"""
     # 配置数据库 -- 根据app加载的配置信息
     mysql_db.init_app(app)
@@ -81,20 +84,21 @@ def create_app(config_name):
         """
         # 获取到当前登录用户的id
         user_id = session.get("user_id")
-        # 默认为False, 用于判断
-        user = False
+        # 保存用户信息, 默认为False, 用于判断
+        g.user = False
         # 如果有用户ID
         if user_id:
             # 通过id获取用户信息
             from info.models import User
             user = User.query.get(user_id)
+            # 如果有此用户信息
+            if user:
+                # 保存用户信息
+                g.user = user.to_dict()
         # # 如果没有用户ID
         # else:
         #     if chack_login(request.path):
         #         return jsonify(errno=RET.USERERR, errmsg="请先登陆用户")
-
-        # 保存用户信息
-        g.user = user
 
     # 定义路由函数 -- 所有请求访问后
     @app.after_request

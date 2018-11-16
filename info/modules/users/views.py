@@ -350,14 +350,14 @@ def user_news_release():
     # 分类ID
     category_id = request.form.get("category_id")
     # 判断参数是否都有数据
-    if not all([title, source, digest, content, category_id]):
+    if not all([title, source, digest, content, index_image, category_id]):
         return jsonify(errno=RET.PARAMERR, errmsg="参数不齐")
     try:
         # 读取图片二进制数据
         index_image = index_image.read()
     except Exception as e:
         current_app.logger.error(e)
-        # return jsonify(errno=RET.PARAMERR, errmsg="图片读取失败")
+        return jsonify(errno=RET.PARAMERR, errmsg="图片读取失败")
     # 实例化保存发布新闻数据
     news = News()
     if index_image:

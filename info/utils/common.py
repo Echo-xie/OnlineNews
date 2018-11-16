@@ -3,9 +3,8 @@
 date: 18-11-10 下午8:21
 """
 import functools
-
+import random
 from flask import session, g, jsonify, request
-
 from info import RET
 
 
@@ -41,15 +40,15 @@ def user_login_data(fn):
         """
         # 获取到当前登录用户的id
         user_id = session.get("user_id")
-        # 默认为False, 用于判断
-        user = False
+        # 保存用户信息, 默认为False, 用于判断
+        g.user = False
         # 如果有用户ID
         if user_id:
             # 通过id获取用户信息
             from info.models import User
             user = User.query.get(user_id)
-        # 保存用户信息
-        g.user = user
+            if user:
+                g.user = user.to_dict()
         return fn(*args, **kwargs)
 
     return wrapper
@@ -115,3 +114,32 @@ def storage(data):
         raise Exception("上传文件到七牛失败")
     # 返回上传文件的网络路径
     return ret["key"]
+
+
+def add_test_users():
+    """
+        添加测试用户
+    :return:
+    """
+    import datetime
+    users = []
+    now = datetime.datetime.now()
+    for num in range(0, 10000):
+        try:
+            from info.models import User
+            from info import mysql_db
+            from manage import app
+            user = User()
+            user.nick_name = "%011d" % num
+            user.mobile = "%011d" % num
+            user.password_hash = "pbkdf2:sha256:50000$SgZPAbEj$a253b9220b7a916e03bf27119d401c48ff4a1c81d7e00644e0aaf6f3a8c55829"
+            user.create_time = now - datetime.timedelta(seconds=random.randint(0, 2678400))
+            user.last_login = now - datetime.timedelta(seconds=random.randint(0, 2678400))
+            users.append(user)
+            print(user.mobile)
+        except Exception as e:
+            print(e)
+    with app.app_context():
+        mysql_db.session.add_all(users)
+        mysql_db.session.commit()
+    print('OK')
