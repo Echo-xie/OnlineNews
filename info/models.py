@@ -196,6 +196,7 @@ class News(BaseModel, db.Model):
             "reason": self.reason,
             "create_time": self.create_time.strftime("%Y-%m-%d %H:%M:%S"),
             "user_id": self.user_id,
+            "category": self.category,
         }
         # 返回字典
         return resp_dict

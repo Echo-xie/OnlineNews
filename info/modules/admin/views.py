@@ -5,10 +5,10 @@ date: 18-11-16 下午6:51
 import time
 from datetime import datetime, timedelta
 
-from flask import request, render_template, current_app, session, redirect, url_for, g
+from flask import request, render_template, current_app, session, redirect, url_for, g, jsonify
 
-from info import constants
-from info.models import User
+from info import constants, RET, mysql_db
+from info.models import User, News
 from . import admin_blu
 
 
@@ -209,3 +209,130 @@ def user_list():
     }
 
     return render_template('admin/user_list.html', data=data)
+
+
+@admin_blu.route("/news_review")
+def news_review():
+    """
+        新闻审核页面和功能
+    :return:
+    """
+    # 封装新闻审核列表
+    news_review_list = []
+    # 新闻审核实体列表
+    news_review_entity_list = []
+    # 页码 请求体
+    page = request.args.get("page", 1)
+    # 关键字
+    keywords = request.args.get("keywords", "")
+    # 当前页码
+    current_page = 1
+    # 总页数
+    total_page = 1
+    try:
+        # 转类型
+        page = int(page)
+    except Exception as e:
+        current_app.logger.error(e)
+    try:
+        # 查询条件
+        filters = []
+        # 如果有关键字
+        if keywords:
+            # 新闻标题包含关键字
+            filters.append(News.title.contains(keywords))
+        # 新闻 条件查询后, 分页查询(创建时间倒序)
+        paginate = News.query.filter(*filters).order_by(News.create_time.desc()).paginate(page, constants.ADMIN_NEWS_PAGE_MAX_COUNT, False)
+        # 获取当前页码查询数据
+        news_review_entity_list = paginate.items
+        # 当前页码
+        current_page = paginate.page
+        # 总页数
+        total_page = paginate.pages
+    except Exception as e:
+        current_app.logger.error(e)
+    # 循环新闻审核实体列表
+    for news in news_review_entity_list:
+        # 封装
+        news_review_list.append(news.to_dict())
+    # 封装返回数据
+    data = {
+        "news_review_list": news_review_list,
+        "current_page": current_page,
+        "total_page": total_page
+    }
+    # 返回
+    return render_template("admin/news_review.html", data=data)
+
+
+@admin_blu.route("/news_review_detail", methods=["GET", "POST"])
+def news_review_detail():
+    """
+        新闻审核详情页面和功能
+    :return:
+    """
+    if request.method == "GET":
+        # 获取新闻id
+        news_id = request.args.get("news_id")
+        # 判断是否有新闻ID
+        if not news_id:
+            return render_template('admin/news_review_detail.html', data={"errmsg": "未查询到此新闻"})
+        # 当前新闻详情
+        news = None
+        try:
+            # 通过ID查询新闻
+            news = News.query.get(news_id)
+        except Exception as e:
+            current_app.logger.error(e)
+        # 判断是否有此新闻
+        if not news:
+            return render_template('admin/news_review_detail.html', data={"errmsg": "未查询到此新闻"})
+        # 返回数据
+        data = {"news": news.to_dict()}
+        return render_template('admin/news_review_detail.html', data=data)
+    # 新闻详情
+    news = None
+    # 获取请求体
+    data_dict = request.json
+    # 获取新闻ID
+    news_id = data_dict.get("news_id")
+    # 获取动作
+    action = data_dict.get("action")
+    # 判断是否所有参数都有数据
+    if not all([news_id, action]):
+        return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
+    # 判断动作参数是否规定数据
+    if action not in ("accept", "reject"):
+        return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
+    try:
+        # 根据新闻ID查询数据
+        news = News.query.get(news_id)
+    except Exception as e:
+        current_app.logger.error(e)
+    # 判断是否获取到新闻数据
+    if not news:
+        return jsonify(errno=RET.NODATA, errmsg="未查询到数据")
+    # 判断执行的动作 -- 通过审核
+    if action == "accept":
+        # 通过审核
+        news.status = 0
+    # 拒绝通过
+    else:
+        # 拒绝通过, 需要获取拒绝原因
+        reason = data_dict.get("reason")
+        # 判断
+        if not reason:
+            return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
+        # 设置数据
+        news.reason = reason
+        # 未通过
+        news.status = -1
+    # 保存数据库
+    try:
+        mysql_db.session.commit()
+    except Exception as e:
+        current_app.logger.error(e)
+        mysql_db.session.rollback()
+        return jsonify(errno=RET.DBERR, errmsg="数据保存失败")
+    # 返回
+    return jsonify(errno=RET.OK, errmsg="操作成功")
