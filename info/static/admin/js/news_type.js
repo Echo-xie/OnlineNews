@@ -1,4 +1,4 @@
-$(function(){
+$(function () {
     var $a = $('.edit');
     var $add = $('.addtype');
     var $pop = $('.pop_con');
@@ -9,7 +9,7 @@ $(function(){
     var sHandler = 'edit';
     var sId = 0;
 
-    $a.click(function(){
+    $a.click(function () {
         sHandler = 'edit';
         sId = $(this).parent().siblings().eq(0).html();
         $pop.find('h3').html('修改分类');
@@ -17,30 +17,28 @@ $(function(){
         $pop.show();
     });
 
-    $add.click(function(){
+    $add.click(function () {
         sHandler = 'add';
         $pop.find('h3').html('新增分类');
         $input.val('');
         $pop.show();
     });
 
-    $cancel.click(function(){
+    $cancel.click(function () {
         $pop.hide();
         $error.hide();
     });
 
-    $input.click(function(){
+    $input.click(function () {
         $error.hide();
     });
 
-    $confirm.click(function(){
+    $confirm.click(function () {
 
         var params = {};
-        if(sHandler=='edit')
-        {
+        if (sHandler == 'edit') {
             var sVal = $input.val();
-            if(sVal=='')
-            {
+            if (sVal == '') {
                 $error.html('输入框不能为空').show();
                 return;
             }
@@ -49,11 +47,9 @@ $(function(){
                 "name": sVal
             };
         }
-        else
-        {
+        else {
             var sVal = $input.val();
-            if(sVal=='')
-            {
+            if (sVal == '') {
                 $error.html('输入框不能为空').show();
                 return;
             }
@@ -63,6 +59,29 @@ $(function(){
         }
 
         // TODO 发起修改分类请求
+        $.ajax({
+            url: "/admin/add_category",
+            method: "post",
+            headers: {
+                "X-CSRFToken": getCookie("csrf_token")
+            },
+            data: JSON.stringify(params),
+            contentType: "application/json",
+            success: function (resp) {
+                if (resp.errno == "0") {
+                    // 刷新当前界面
+                    location.reload();
+                } else {
+                    $error.html(resp.errmsg).show();
+                }
+            }
+        })
 
     })
 });
+
+// 获取cookie
+function getCookie(name) {
+    var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
+    return r ? r[1] : undefined;
+}

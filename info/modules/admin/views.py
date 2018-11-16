@@ -494,3 +494,69 @@ def news_edit_detail():
         return jsonify(errno=RET.DBERR, errmsg="保存数据失败")
     # 返回
     return jsonify(errno=RET.OK, errmsg="操作成功")
+
+
+@admin_blu.route("/news_type")
+def news_type():
+    """
+        新闻分类列表
+    :return:
+    """
+    # 查询所有新闻分类数据 -- 实体
+    categories = Category.query.all()
+    # 封装
+    categories_dicts = []
+    # 循环实体
+    for category in categories:
+        # 封装数据
+        categories_dicts.append(category.to_dict())
+    # 移除最新分类
+    categories_dicts.pop(0)
+    # 返回内容
+    return render_template('admin/news_type.html', data={"categories": categories_dicts})
+
+
+@admin_blu.route("/add_category", methods=["POST"])
+def add_category():
+    """
+        新闻分类页面和功能
+    :return:
+    """
+    # 请求体
+    data_dict = request.json
+    # 分类ID
+    category_id = data_dict.get("id")
+    # 分类名称
+    category_name = data_dict.get("name")
+    # 判断分类名称是否有数据
+    if not category_name:
+        return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
+    # 判断分类ID是否有数据
+    if category_id:
+        try:
+            # 判断数据库中是否有此分类ID
+            category = Category.query.get(category_id)
+        except Exception as e:
+            current_app.logger.error(e)
+            return jsonify(errno=RET.DBERR, errmsg="查询数据失败")
+        # 如果没有此分类数据
+        if not category:
+            return jsonify(errno=RET.NODATA, errmsg="未查询到分类信息")
+        # 修改分类名称
+        category.name = category_name
+    else:
+        # 如果没有分类id，则是添加分类
+        category = Category()
+        # 保存分类名称
+        category.name = category_name
+        # 新增数据
+        mysql_db.session.add(category)
+    try:
+        # 事务提交
+        mysql_db.session.commit()
+    except Exception as e:
+        current_app.logger.error(e)
+        mysql_db.session.rollback()
+        return jsonify(errno=RET.DBERR, errmsg="保存数据失败")
+    # 返回
+    return jsonify(errno=RET.OK, errmsg="保存数据成功")
