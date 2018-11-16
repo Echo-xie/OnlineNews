@@ -19,6 +19,9 @@
             <span class="time_souce fl">{{ data.news.create_time }} 来源: {{ data.news.source }}</span>
             <span class="comment fr">{{ data.news.clicks }}</span>
         </div>
+        <p class="summary">
+            {{ data.news.digest }}
+        </p>
         {{ data.news.content | safe }}
         {#        <p class="summary">#}
         {#            摘要：昨天终结十一连阳之后，今天A股迅速重拾涨势，沪指收涨0.8%创逾两个月新高。房地产板块集体走强，尾盘更是放量大涨，万科A一度逼近涨停，最终收涨8.4%，股价创历史新高。#}

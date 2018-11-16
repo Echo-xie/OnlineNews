@@ -542,6 +542,8 @@ body {
     overflow: hidden;
     background: #fff;
     border: 1px solid #ececee;
+    word-break: break-all;
+    word-wrap: break-word;
 }
 
 .detail_con h3 {
