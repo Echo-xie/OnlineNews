@@ -8,7 +8,8 @@ from datetime import datetime, timedelta
 from flask import request, render_template, current_app, session, redirect, url_for, g, jsonify
 
 from info import constants, RET, mysql_db
-from info.models import User, News
+from info.models import User, News, Category
+from info.utils.common import storage
 from . import admin_blu
 
 
@@ -334,5 +335,162 @@ def news_review_detail():
         current_app.logger.error(e)
         mysql_db.session.rollback()
         return jsonify(errno=RET.DBERR, errmsg="数据保存失败")
+    # 返回
+    return jsonify(errno=RET.OK, errmsg="操作成功")
+
+
+@admin_blu.route("/news_edit")
+def news_edit():
+    """
+        新闻板式列表页面
+    :return:
+    """
+    # 封装新闻板式编辑列表
+    news_edit_list = []
+    # 新闻板式编辑实体列表
+    news_edit_entity_list = []
+    # 页码 请求体
+    page = request.args.get("page", 1)
+    # 关键字
+    keywords = request.args.get("keywords", "")
+    # 当前页码
+    current_page = 1
+    # 总页数
+    total_page = 1
+    try:
+        # 转类型
+        page = int(page)
+    except Exception as e:
+        current_app.logger.error(e)
+    try:
+        # 查询条件
+        filters = []
+        # 如果有关键字
+        if keywords:
+            # 新闻标题包含关键字
+            filters.append(News.title.contains(keywords))
+        # 新闻 条件查询后, 分页查询(创建时间倒序)
+        paginate = News.query.filter(*filters).order_by(News.create_time.desc()).paginate(page, constants.ADMIN_NEWS_PAGE_MAX_COUNT, False)
+        # 获取当前页码查询数据
+        news_edit_entity_list = paginate.items
+        # 当前页码
+        current_page = paginate.page
+        # 总页数
+        total_page = paginate.pages
+    except Exception as e:
+        current_app.logger.error(e)
+    # 循环新闻板式编辑实体列表
+    for news in news_edit_entity_list:
+        # 封装
+        news_edit_list.append(news.to_dict())
+    # 封装返回数据
+    data = {
+        "news_edit_list": news_edit_list,
+        "current_page": current_page,
+        "total_page": total_page
+    }
+    # 返回
+    return render_template("admin/news_edit.html", data=data)
+
+
+@admin_blu.route("/news_edit_detail", methods=["GET", "POST"])
+def news_edit_detail():
+    """
+        新闻板式编辑页面和功能
+    :return:
+    """
+    if request.method == "GET":
+        # 获取新闻id
+        news_id = request.args.get("news_id")
+        # 判断是否有新闻ID
+        if not news_id:
+            return render_template('admin/news_edit_detail.html', data={"errmsg": "未查询到此新闻"})
+        # 当前新闻详情
+        news = None
+        try:
+            # 通过ID查询新闻
+            news = News.query.get(news_id)
+        except Exception as e:
+            current_app.logger.error(e)
+        # 判断是否有此新闻
+        if not news:
+            return render_template('admin/news_edit_detail.html', data={"errmsg": "未查询到此新闻"})
+        # 获取新闻分类全部数据 -- 实体
+        categories = Category.query.all()
+        # 封装返回新闻分类数据
+        categories_list = []
+        # 循环新闻分类实体
+        for category in categories:
+            # 转为字典
+            c_dict = category.to_dict()
+            # 默认不是选中
+            c_dict["is_selected"] = False
+            # 判断当前分类ID 和 新闻详情中分类ID一致
+            if category.id == news.category_id:
+                # 设置为选中
+                c_dict["is_selected"] = True
+            # 封装
+            categories_list.append(c_dict)
+        # 移除最新分类
+        categories_list.pop(0)
+        # 返回数据
+        data = {"news": news.to_dict(), "categories": categories_list}
+        # 返回
+        return render_template('admin/news_edit_detail.html', data=data)
+    # 新闻实体
+    news = None
+    # 请求体
+    data_dict = request.form
+    # 新闻ID
+    news_id = data_dict.get("news_id")
+    # 新闻标题
+    title = data_dict.get("title")
+    # 新闻摘要
+    digest = data_dict.get("digest")
+    # 新闻内容
+    content = data_dict.get("content")
+    # 新闻上传图片
+    index_image = request.files.get("index_image")
+    # 新闻分类
+    category_id = data_dict.get("category_id")
+    # 判断参数是否都有数据
+    if not all([title, digest, content, category_id]):
+        return jsonify(errno=RET.PARAMERR, errmsg="参数有误")
+    try:
+        # 根据新闻ID获取新闻详情
+        news = News.query.get(news_id)
+    except Exception as e:
+        current_app.logger.error(e)
+    # 判断是否有此新闻
+    if not news:
+        return jsonify(errno=RET.NODATA, errmsg="未查询到新闻数据")
+    # 判断是否有上传图片
+    if index_image:
+        try:
+            # 读取二进制文件
+            index_image = index_image.read()
+        except Exception as e:
+            current_app.logger.error(e)
+            return jsonify(errno=RET.PARAMERR, errmsg="参数有误")
+        try:
+            # 将上传图片上传至七牛云
+            url = storage(index_image)
+        except Exception as e:
+            current_app.logger.error(e)
+            return jsonify(errno=RET.THIRDERR, errmsg="上传图片错误")
+        # 拼接上传图片路径
+        news.index_image_url = constants.QINIU_DOMIN_PREFIX + url
+    # 设置新闻相关信息
+    news.title = title
+    news.digest = digest
+    news.content = content
+    news.category_id = category_id
+    try:
+        # 事务提交
+        mysql_db.session.commit()
+    except Exception as e:
+        current_app.logger.error(e)
+        mysql_db.session.rollback()
+        return jsonify(errno=RET.DBERR, errmsg="保存数据失败")
     # 返回
     return jsonify(errno=RET.OK, errmsg="操作成功")
