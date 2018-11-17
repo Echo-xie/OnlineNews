@@ -241,9 +241,7 @@ def register():
         return jsonify(errno=RET.DBERR, errmsg="数据保存失败")
     """5. 保存当前用户的状态"""
     # 用户ID
-    session["user_id"] = user.id
-    # 用户昵称
-    session["nick_name"] = user.nick_name
+    session["face_user_id"] = user.id
     """6. 返回注册的结果"""
     return jsonify(errno=RET.OK, errmsg="新用户注册成功")
 
@@ -282,11 +280,7 @@ def login():
         return jsonify(errno=RET.PARAMERR, errmsg="密码错误")
     # 登陆成功, 设置用户信息
     # 用户ID
-    session["user_id"] = user.id
-    # 用户昵称
-    session["nick_name"] = user.nick_name
-    # 用户手机
-    session["mobile"] = user.mobile
+    session["face_user_id"] = user.id
     # 更新用户最后一次登陆时间
     user.last_login = datetime.now()
     try:
@@ -308,9 +302,7 @@ def logout():
     :return:
     """
     # 移除 user_id
-    session.pop('user_id', None)
-    # 移除 nick_name
-    session.pop('nick_name', None)
+    session.pop('face_user_id', None)
     # 移除全局g对象中的user信息 -- 如果全局g对象有user属性
     g.user = False
     # 返回

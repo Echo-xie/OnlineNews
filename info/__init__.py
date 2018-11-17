@@ -83,7 +83,7 @@ def create_app(config_name):
         :return:
         """
         # 获取到当前登录用户的id
-        user_id = session.get("user_id")
+        user_id = session.get("face_user_id")
         # 保存用户信息, 默认为False, 用于判断
         g.user = False
         # 如果有用户ID
@@ -109,7 +109,7 @@ def create_app(config_name):
         :return: 响应
         """
         # # 获取session中的用户ID
-        # user_id = session.get("user_id")
+        # user_id = session.get("face_user_id")
         # # 用户对象
         # user = ""
         # try:

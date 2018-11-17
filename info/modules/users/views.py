@@ -416,7 +416,7 @@ def user_news_list():
     total_page = 1
     try:
         # 在用户新闻表中查询数据( 当前页码, 分页数量, 不查询 )
-        paginate = user.news_list.paginate(page, constants.USER_COLLECTION_MAX_NEWS, False)
+        paginate = user.news_list.order_by(News.create_time.desc()).paginate(page, constants.USER_COLLECTION_MAX_NEWS, False)
         # 获取具体用户新闻数据
         news_entitys = paginate.items
         # 获取当前页码

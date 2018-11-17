@@ -47,9 +47,7 @@ def login():
     if not user.is_admin:
         return render_template("admin/login.html", errmsg="此用户不是管理员身份")
     # 保存用户ID
-    session["user_id"] = user.id
-    # 保存用户昵称
-    session["nick_name"] = user.nick_name
+    session["admin_user_id"] = user.id
     # 重定向后台运维管理首页
     return redirect(url_for("admin.index"))
 
@@ -57,9 +55,7 @@ def login():
 @admin_blu.route("/logout")
 def logout():
     # 保存用户ID
-    session.pop("user_id", None)
-    # 保存用户昵称
-    session.pop("nick_name", None)
+    session.pop("admin_user_id", None)
     # 移除全局g对象中的user信息 -- 如果全局g对象有user属性
     g.user = False
     # 返回
@@ -289,7 +285,7 @@ def news_review_detail():
         if not news:
             return render_template('admin/news_review_detail.html', data={"errmsg": "未查询到此新闻"})
         # 返回数据
-        data = {"news": news.to_dict()}
+        data = {"news": news.to_review_dict()}
         return render_template('admin/news_review_detail.html', data=data)
     # 新闻详情
     news = None

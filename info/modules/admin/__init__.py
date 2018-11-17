@@ -15,7 +15,7 @@ def before_request():
     :return:
     """
     # 获取到当前登录用户的id
-    user_id = session.get("user_id")
+    user_id = session.get("admin_user_id")
     # 保存用户信息, 默认为False, 用于判断
     g.user = False
     # 请求访问不是后台运维登陆

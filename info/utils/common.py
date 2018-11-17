@@ -39,7 +39,7 @@ def user_login_data(fn):
         :return:
         """
         # 获取到当前登录用户的id
-        user_id = session.get("user_id")
+        user_id = session.get("face_user_id")
         # 保存用户信息, 默认为False, 用于判断
         g.user = False
         # 如果有用户ID
@@ -70,9 +70,7 @@ def check_login(fn):
         :return:
         """
         # 获取到当前登录用户的id
-        user_id = session.get("user_id")
-        # 默认为False, 用于判断
-        user = False
+        user_id = session.get("face_user_id")
         # 如果没有用户ID 以及 请求方式为POST
         if not user_id and request.method == "POST":
             return jsonify(errno=RET.SESSIONERR, errmsg="请先登陆用户")

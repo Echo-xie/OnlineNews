@@ -33,11 +33,11 @@
                 <td>{{ news.create_time }}</td>
                 <td>
                     {% if news.status == 0 %}
-                        已通过
+                        <em style="color: green;">已通过</em>
                     {% elif news.status == 1 %}
-                        未审核
+                        <em style="color: #dca80a;">未审核</em>
                     {% else %}
-                        未通过
+                        <em style="color: red;">未通过</em>
                     {% endif %}
                 </td>
                 <td>
