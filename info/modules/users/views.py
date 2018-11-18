@@ -113,7 +113,7 @@ def user_pic_info():
     return jsonify(errno=RET.OK, errmsg="头像上传成功", avatar_url=constants.QINIU_DOMIN_PREFIX + url)
 
 
-@users_blu.route("/user_follow", methods=["GET", "POST"])
+@users_blu.route("/user_follow")
 @check_login
 def user_follow():
     """
