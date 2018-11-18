@@ -55,8 +55,8 @@ def createsuperuser(name, password):
 
 # 运行项目
 if __name__ == '__main__':
-    app.run()
-    # manager.run()
+    # app.run()
+    manager.run()
 
     # 创建测试用户
     # add_test_users()
