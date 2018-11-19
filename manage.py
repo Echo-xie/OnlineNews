@@ -6,10 +6,9 @@ from info import create_app, mysql_db
 from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
 from info import models
-
-# 创建 app, 选择项目环境：development(开发) / production(上线)
 from info.utils.common import add_test_users
 
+# 创建 app, 选择项目环境：development(开发) / production(上线)
 app = create_app("development")
 # 使用终端脚本工具启动和管理Flask项目
 manager = Manager(app)

@@ -36,3 +36,6 @@ REDIS_POOL_SELECT_0 = "pool_0"
 
 # 不需要验证用户登陆的请求访问路径
 CHACK_LOGIN_PATH = ["/users/follow", "/news/news_comment", "/news/comment_like", "/news/news_collect"]
+
+# 云服务器IP
+MY_SERVER_IP = "112.74.55.223"

@@ -141,8 +141,8 @@ def send_sms():
     # 写日志
     current_app.logger.debug("短信验证码为: %s" % sms_code)
     # 发送短信 ( 手机号码, [短信内容, 失效时间-分钟], 模板ID )
-    # result = CCP().send_template_sms(mobile, [sms_code, constants.SMS_CODE_REDIS_EXPIRES // 60], constants.SMS_CODE_TEMPLATE_ID)
-    result = 0
+    result = CCP().send_template_sms(mobile, [sms_code, constants.SMS_CODE_REDIS_EXPIRES // 60], constants.SMS_CODE_TEMPLATE_ID)
+    # result = 0
     # 判断短信是否发送成功
     if result != 0:
         # 短信发送失败

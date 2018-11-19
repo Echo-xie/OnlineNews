@@ -7,6 +7,8 @@ import logging
 import os
 from redis import StrictRedis
 
+from info import constants
+
 
 class Config(object):
     """
@@ -15,13 +17,14 @@ class Config(object):
 
     # mysql数据库连接配置
     # SQLALCHEMY_DATABASE_URI = '数据库类型://账号:密码@数据库IP:数据库端口/数据库名称'
-    SQLALCHEMY_DATABASE_URI = 'mysql://root:123456@127.0.0.1:3306/informations'
+    SQLALCHEMY_DATABASE_URI = 'mysql://root:123456@' + constants.MY_SERVER_IP + ':3306/informations'
     # 是否追踪对象的修改并且发送信号
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # redis数据库连接配置
     # 数据库地址
-    REDIS_HOST = "127.0.0.1"
+    # REDIS_HOST = "127.0.0.1"
+    REDIS_HOST = constants.MY_SERVER_IP
     # 数据库用户
     REDIS_USER = "root"
     # 数据库密码
