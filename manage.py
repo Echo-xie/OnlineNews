@@ -9,7 +9,8 @@ from info import models
 from info.utils.common import add_test_users
 
 # 创建 app, 选择项目环境：development(开发) / production(上线)
-app = create_app("development")
+# app = create_app("development")
+app = create_app("production")
 # 使用终端脚本工具启动和管理Flask项目
 manager = Manager(app)
 # 初始化数据库迁移模块
