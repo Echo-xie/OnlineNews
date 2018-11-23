@@ -17,7 +17,7 @@ class Config(object):
 
     # mysql数据库连接配置
     # SQLALCHEMY_DATABASE_URI = '数据库类型://账号:密码@数据库IP:数据库端口/数据库名称'
-    SQLALCHEMY_DATABASE_URI = 'mysql://root:123456@' + constants.MY_SERVER_IP + ':3306/informations'
+    SQLALCHEMY_DATABASE_URI = 'mysql://informations_test:123456@' + constants.MY_SERVER_IP + ':3306/informations'
     # 是否追踪对象的修改并且发送信号
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
