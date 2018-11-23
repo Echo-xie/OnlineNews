@@ -122,7 +122,7 @@ def add_test_users():
     import datetime
     users = []
     now = datetime.datetime.now()
-    for num in range(0, 10000):
+    for num in range(0, 10001):
         try:
             from info.models import User
             from info import mysql_db
@@ -138,6 +138,12 @@ def add_test_users():
         except Exception as e:
             print(e)
     with app.app_context():
-        mysql_db.session.add_all(users)
-        mysql_db.session.commit()
+        for i in range(0, 101):
+            start_index = i * 100
+            if i != 0:
+                start_index += 1
+            # mysql_db.session.add_all(users)
+            session_user = users[start_index: (i + 1) * 100 + 1]
+            mysql_db.session.add_all(session_user)
+            mysql_db.session.commit()
     print('OK')

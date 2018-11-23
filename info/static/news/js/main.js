@@ -298,7 +298,7 @@ $(function () {
         // 右侧标签控件
         var rank_con = $(".rank_con")
         // 滚动不可超过 页面可以滚动的距离
-        if (nowScroll < canScrollHeight - 10) {
+        if (nowScroll < canScrollHeight - 40) {
             // 如果屏幕滚动遮住头部标签, 设置标签的margin-top
             if (nowScroll > header_height) {
                 // 设置外边界-top
